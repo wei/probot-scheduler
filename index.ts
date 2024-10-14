@@ -1,18 +1,19 @@
 import "@std/dotenv/load";
-import express, { Request, Response } from "express";
+import express from "express";
 import mongoose from "mongoose";
-import middleware from "@/middleware.ts";
+import { createNodeMiddleware, createProbot } from "probot";
+import probotApp from "@/lib/app.ts";
+import createRouter from "@/lib/router/index.ts";
 
-const app = express();
-app.use(middleware);
+const probot = createProbot();
+
+const server = express();
+server.use(createNodeMiddleware(probotApp, { probot }));
+server.use("/", createRouter(probot));
 
 await mongoose.connect(Deno.env.get("MONGODB_URL") || "");
 console.log(`MongoDB connection state: ${mongoose.connection.readyState}`);
 
-app.get("/", (_req: Request, res: Response) => {
-  res.send("Welcome to the Dinosaur API!");
-});
-
-app.listen(Deno.env.get("PORT") || 3000, () => {
+server.listen(Deno.env.get("PORT") || 3000, () => {
   console.log(`Server is running on port ${Deno.env.get("PORT") || 3000}`);
 });

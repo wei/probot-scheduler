@@ -3,40 +3,49 @@ import type { AnyBulkWriteOperation } from "mongoose";
 import Installation from "@/models/Installation.ts";
 import Repository, { type RepositorySchemaType } from "@/models/Repository.ts";
 
-export async function setUpInstallation({
-  app: _app,
-  context: { name, log, octokit, payload },
+export function setUpInstallation({
+  app,
+  context: { payload: { installation: { id: installationId } } },
 }: {
   app: Probot;
   context: Context<"installation" | "installation_target">;
 }) {
-  const { action, installation } = payload;
+  return processInstallation({
+    app,
+    installationId,
+  });
+}
 
-  if (
-    "suspended_at" in installation && installation.suspended_at
-  ) {
-    log.info(
-      `Skipping reset for suspended installation ${installation.id}`,
-    );
-    return;
-  }
+export async function processInstallation({
+  app,
+  installationId,
+}: {
+  app: Probot;
+  installationId: number;
+}) {
+  const octokit = await app.auth(installationId);
 
-  let installationData = installation;
-  if (name === "installation_target" && action === "renamed") {
-    // The "installation_target" event only provides a partial installation object.
-    // Fetch the complete installation data from GitHub.
-    installationData = (await octokit.apps.getInstallation({
-      installation_id: installation.id,
-    })).data as unknown as Context<"installation">["payload"]["installation"];
-  }
+  const installation = (await octokit.apps.getInstallation({
+    installation_id: installationId,
+  })).data as unknown as Context<"installation">["payload"]["installation"];
+
   /**
    * Update installation
    */
   await Installation.findOneAndUpdate(
-    { id: installation.id },
-    installationData,
+    { id: installationId },
+    installation,
     { new: true, upsert: true },
   ).lean();
+
+  if (
+    installation.suspended_at
+  ) {
+    app.log.info(
+      `Skipping reset for suspended installation ${installationId}`,
+    );
+    return;
+  }
 
   /**
    * Update repositories
@@ -48,14 +57,14 @@ export async function setUpInstallation({
     ) as unknown as RepositorySchemaType[]; // TODO: Type fixed in https://github.com/octokit/plugin-paginate-rest.js/issues/350 upgrade probot to pick it up
 
     const existingRepositoriesIds = await Repository.find(
-      { installation_id: installation.id },
+      { installation_id: installationId },
       { id: 1, _id: 0 },
     ).lean();
 
     const repositoriesToAdd: RepositorySchemaType[] = [];
     const repositoriesToUpdate: RepositorySchemaType[] = [];
-    const existingRepositoriesIdSet = new Set(
-      existingRepositoriesIds.map((repo) => repo.id),
+    const existingRepositoriesIdSet: Set<number> = new Set(
+      existingRepositoriesIds.map((r) => r.id),
     );
 
     // Determine repositories to add, update, and remove
@@ -81,7 +90,7 @@ export async function setUpInstallation({
         insertOne: {
           document: {
             ...repo,
-            installation_id: installation.id,
+            installation_id: installationId,
           },
         },
       });
@@ -93,7 +102,7 @@ export async function setUpInstallation({
         deleteMany: {
           filter: {
             id: { $in: repositoryIdsToRemove },
-            installation_id: installation.id,
+            installation_id: installationId,
           },
         },
       });
@@ -108,7 +117,7 @@ export async function setUpInstallation({
             update: {
               $set: {
                 ...repo,
-                installation_id: installation.id,
+                installation_id: installationId,
               },
             },
             upsert: true,
@@ -120,11 +129,14 @@ export async function setUpInstallation({
     if (bulkOps.length > 0) {
       await Repository.bulkWrite(bulkOps);
     }
+
+    return { installation, repositories: installedRepositories };
   } catch (err) {
-    log.error(
+    app.log.error(
       err,
-      `Failed to retrieve repositories for ${installation.id}`,
+      `Failed to retrieve repositories for ${installationId}`,
     );
+    throw new Error(`Failed to retrieve repositories for ${installationId}`);
   }
 }
 
@@ -162,4 +174,69 @@ export async function suspendInstallation({
     installation,
     { new: true, upsert: true },
   ).lean();
+}
+
+export async function getInstallation({
+  app,
+  installationId,
+}: {
+  app: Probot;
+  installationId: number;
+}) {
+  const installation = await Installation.findOne({ id: installationId })
+    .lean();
+  if (!installation) {
+    app.log.warn(`Installation ${installationId} not found`);
+    throw new Error(`Installation not found for Id ${installationId}`);
+  }
+
+  const repositories = await Repository.find({
+    installation_id: installationId,
+  }).lean();
+
+  return { installation, repositories };
+}
+
+export async function processInstallationByLogin({
+  app,
+  installationLogin,
+}: {
+  app: Probot;
+  installationLogin: string;
+}) {
+  const installation = await Installation.findOne({
+    "account.login": installationLogin,
+  }, { id: 1, _id: 0 }).lean();
+
+  if (!installation) {
+    app.log.warn(`Installation ${installationLogin} not found`);
+    return new Error(`Installation not found for ${installationLogin}`);
+  }
+
+  return processInstallation({
+    app,
+    installationId: installation.id,
+  });
+}
+
+export async function getInstallationByLogin({
+  app,
+  installationLogin,
+}: {
+  app: Probot;
+  installationLogin: string;
+}) {
+  const installation = await Installation.findOne({
+    "account.login": installationLogin,
+  }, { id: 1, _id: 0 }).lean();
+
+  if (!installation) {
+    app.log.warn(`Installation ${installationLogin} not found`);
+    throw new Error(`Installation not found for ${installationLogin}`);
+  }
+
+  return getInstallation({
+    app,
+    installationId: installation.id,
+  });
 }
