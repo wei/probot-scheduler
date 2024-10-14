@@ -1,7 +1,7 @@
 import type { Context, Probot } from "probot";
 import pluralize from "pluralize";
 import appConfig from "@/lib/app-config.ts";
-import { setUpInstallation } from "./common/process-installation.ts";
+import { setUpInstallation } from "@/lib/common/process-installation.ts";
 
 function handleInstallationRepositories(
   app: Probot,

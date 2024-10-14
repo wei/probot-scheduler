@@ -11,6 +11,7 @@ const RepositorySchema = new Schema<RepositorySchemaType>({
   id: {
     type: Number,
     required: true,
+    index: true,
   },
   node_id: {
     type: String,
@@ -23,6 +24,7 @@ const RepositorySchema = new Schema<RepositorySchemaType>({
   full_name: {
     type: String,
     required: true,
+    index: true,
   },
   owner: {
     id: {

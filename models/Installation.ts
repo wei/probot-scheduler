@@ -26,6 +26,13 @@ const InstallationSchema = new Schema<
   app_id: {
     type: Number,
   },
+  app_slug: {
+    type: String,
+  },
+  repository_selection: {
+    type: String,
+    enum: ["all", "selected"],
+  },
   created_at: {
     type: String,
   },

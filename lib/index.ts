@@ -1,7 +1,7 @@
 import { Probot } from "probot";
-import handleInstallation from "@/lib/handle-installation.ts";
-import handleInstallationRepositories from "@/lib/handle-installation-repositories.ts";
-import handleInstallationTarget from "@/lib/handle-installation-target.ts";
+import handleInstallation from "@/lib/handlers/installation.ts";
+import handleInstallationRepositories from "@/lib/handlers/installation-repositories.ts";
+import handleInstallationTarget from "@/lib/handlers/installation-target.ts";
 
 function app(app: Probot) {
   // listen to installation events
