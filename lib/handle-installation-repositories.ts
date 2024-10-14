@@ -11,7 +11,11 @@ function handleInstallationRepositories(
     action,
     repositories_added: added,
     repositories_removed: removed,
-    installation: { account, repository_selection: selection },
+    installation: {
+      id: installationId,
+      account,
+      repository_selection: selection,
+    },
   } = context.payload;
 
   const log = context.log.child({
@@ -19,8 +23,9 @@ function handleInstallationRepositories(
     event: context.name,
     action,
     account: account.id,
-    accountType: account.type.toLowerCase(),
+    accountType: account.type,
     accountName: account.login,
+    installationId,
     selection: selection,
   });
 
@@ -59,7 +64,7 @@ function handleInstallationRepositories(
       break;
     default:
       log.warn(
-        `Unhandled event installation_repositories.${action} by ${account.login}`,
+        `⚠️ Unhandled event ${context.name}.${action} by ${account.login}`,
       );
       break;
   }

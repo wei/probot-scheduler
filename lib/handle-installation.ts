@@ -5,7 +5,7 @@ import {
   deleteInstallation,
   setUpInstallation,
   suspendInstallation,
-} from "./common/process-installation.ts";
+} from "@/lib/common/process-installation.ts";
 
 function handleInstallation(
   app: Probot,
@@ -14,7 +14,11 @@ function handleInstallation(
   const {
     action,
     repositories,
-    installation: { account, repository_selection: selection },
+    installation: {
+      id: installationId,
+      account,
+      repository_selection: selection,
+    },
   } = context.payload;
 
   const log = context.log.child({
@@ -22,8 +26,9 @@ function handleInstallation(
     event: context.name,
     action,
     account: account.id,
-    accountType: account.type.toLowerCase(),
+    accountType: account.type,
     accountName: account.login,
+    installationId,
     selection: selection,
   });
 
@@ -77,7 +82,9 @@ function handleInstallation(
       });
       break;
     default:
-      log.warn(`Unhandled event installation.${action} by ${account.login}`);
+      log.warn(
+        `⚠️ Unhandled event ${context.name}.${action} by ${account.login}`,
+      );
       break;
   }
 }

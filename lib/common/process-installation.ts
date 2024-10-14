@@ -1,32 +1,40 @@
 import type { Context, Probot } from "probot";
+import type { AnyBulkWriteOperation } from "mongoose";
 import Installation from "@/models/Installation.ts";
 import Repository, { type RepositorySchemaType } from "@/models/Repository.ts";
-import type { AnyBulkWriteOperation } from "mongoose";
 
 export async function setUpInstallation({
   app: _app,
-  context: { log, octokit, payload },
+  context: { name, log, octokit, payload },
 }: {
   app: Probot;
-  context: Context<"installation">; // | Context<"installation_repositories">;
+  context: Context<"installation" | "installation_target">;
 }) {
-  const { installation } = payload;
+  const { action, installation } = payload;
 
-  if (installation.suspended_at) {
+  if (
+    "suspended_at" in installation && installation.suspended_at
+  ) {
     log.info(
-      `Skipping reset for suspended installation ${installation.account.login}`,
+      `Skipping reset for suspended installation ${installation.id}`,
     );
     return;
   }
 
+  let installationData = installation;
+  if (name === "installation_target" && action === "renamed") {
+    // The "installation_target" event only provides a partial installation object.
+    // Fetch the complete installation data from GitHub.
+    installationData = (await octokit.apps.getInstallation({
+      installation_id: installation.id,
+    })).data as unknown as Context<"installation">["payload"]["installation"];
+  }
   /**
    * Update installation
    */
   await Installation.findOneAndUpdate(
     { id: installation.id },
-    {
-      ...installation,
-    },
+    installationData,
     { new: true, upsert: true },
   ).lean();
 
@@ -115,7 +123,7 @@ export async function setUpInstallation({
   } catch (err) {
     log.error(
       err,
-      `Failed to retrieve repositories for ${installation.account.login}`,
+      `Failed to retrieve repositories for ${installation.id}`,
     );
   }
 }
@@ -125,7 +133,7 @@ export async function deleteInstallation({
   context: { log, payload },
 }: {
   app: Probot;
-  context: Context<"installation">; // | Context<"installation_repositories">;
+  context: Context<"installation">;
 }) {
   const { installation } = payload;
 
@@ -143,7 +151,7 @@ export async function suspendInstallation({
   context: { log, payload },
 }: {
   app: Probot;
-  context: Context<"installation">; // | Context<"installation_repositories">;
+  context: Context<"installation">;
 }) {
   const { installation } = payload;
 
@@ -151,9 +159,7 @@ export async function suspendInstallation({
 
   await Installation.findOneAndUpdate(
     { id: installation.id },
-    {
-      ...installation,
-    },
+    installation,
     { new: true, upsert: true },
   ).lean();
 }

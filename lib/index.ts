@@ -1,6 +1,7 @@
 import { Probot } from "probot";
 import handleInstallation from "@/lib/handle-installation.ts";
 import handleInstallationRepositories from "@/lib/handle-installation-repositories.ts";
+import handleInstallationTarget from "@/lib/handle-installation-target.ts";
 
 function app(app: Probot) {
   // listen to installation events
@@ -12,6 +13,11 @@ function app(app: Probot) {
   app.on(
     ["installation_repositories"],
     handleInstallationRepositories.bind(null, app),
+  );
+
+  app.on(
+    ["installation_target"],
+    handleInstallationTarget.bind(null, app),
   );
 
   app.onAny((context) => {
