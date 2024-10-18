@@ -33,7 +33,8 @@
 		"mongodb:27017",
 		"mongo-express:8081",
 		"redis:6379",
-		"redis-commander:8081"
+		"redis-commander:8081",
+		"bullboard:8083"
 	],
 
 	// Use 'postCreateCommand' to run commands after the container is created.

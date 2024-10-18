@@ -3,5 +3,9 @@
   "editor.defaultFormatter": "denoland.vscode-deno",
   "editor.formatOnSave": true,
   "files.insertFinalNewline": true,
-  "editor.tabSize": 2
+  "editor.tabSize": 2,
+  "deno.codeLens.references": true,
+  "deno.codeLens.implementations": true,
+  "deno.codeLens.referencesAllFunctions": true,
+  "deno.codeLens.test": true
 }
