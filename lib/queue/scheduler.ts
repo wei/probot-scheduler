@@ -1,14 +1,14 @@
-import { jobQueue, JobPriority, JobData } from "./index.ts";
+import { jobQueue, JobPriority, RepoJobData } from "./index.ts";
 
-function getJobSchedulerId(jobData: JobData) {
+function getJobSchedulerId(jobData: RepoJobData) {
   return `[job-scheduler::${jobData.installation_id}:${jobData.repository_id}]`;
 }
 
-function getJobId(jobData: JobData) {
+function getJobId(jobData: RepoJobData) {
   return `[job::${jobData.installation_id}:${jobData.repository_id}]`;
 }
 
-export function scheduleJob(jobData: JobData, options: {
+export function scheduleJob(jobData: RepoJobData, options: {
   cron: string;
   immediately?: boolean;
   jobPriority?: JobPriority;
@@ -25,6 +25,7 @@ export function scheduleJob(jobData: JobData, options: {
       data: jobData,
       opts: {
         priority: jobPriority,
+        attempts: 1,
         deduplication: {
           id: getJobId(jobData),
         }
@@ -33,7 +34,7 @@ export function scheduleJob(jobData: JobData, options: {
   );
 }
 
-export function addJob(jobData: JobData, jobPriority = JobPriority.High) {
+export function addJob(jobData: RepoJobData, jobPriority = JobPriority.High) {
   return jobQueue.add(
     getJobId(jobData),
     jobData,
@@ -46,7 +47,7 @@ export function addJob(jobData: JobData, jobPriority = JobPriority.High) {
   );
 }
 
-export function unscheduleJob(jobData: JobData) {
+export function unscheduleJob(jobData: RepoJobData) {
   return Promise.all([
     jobQueue.removeJobScheduler(getJobSchedulerId(jobData)),
     jobQueue.remove(getJobId(jobData)),

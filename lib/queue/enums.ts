@@ -1,5 +1,5 @@
-export enum QueueNames {
-  JobQueue = "JobQueue",
+export enum QueueName {
+  RepoJobQueue = "RepoJobQueue",
 }
 
 export enum JobPriority {
@@ -8,7 +8,7 @@ export enum JobPriority {
   High = 5,
 }
 
-export interface JobData {
+export interface RepoJobData {
   installation_id: number;
   repository_id: number;
   full_name: string;

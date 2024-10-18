@@ -10,6 +10,8 @@ export async function scheduleInstallation({
   triggerImmediately?: boolean;
   repositoryRecords?: RepositorySchemaType[];
 }) {
+  console.log("Scheduling installation", installationId);
+
   const repositories = repositoryRecords ??
     await Repository.find({
       installation_id: installationId,
@@ -42,6 +44,8 @@ export async function unscheduleInstallation({
 }: {
   installationId: number;
 }) {
+  console.log("Unscheduling installation", installationId);
+
   const repositories = await Repository.find({
     installation_id: installationId,
   }).lean();

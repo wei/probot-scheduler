@@ -39,13 +39,14 @@ export async function processInstallation({
     { new: true, upsert: true },
   ).lean();
 
+  await unscheduleInstallation({ installationId });
+
   if (
     installation.suspended_at
   ) {
     app.log.info(
       `Skipping reset for suspended installation ${installationId}`,
     );
-    unscheduleInstallation({ installationId });
     return;
   }
 
@@ -132,7 +133,7 @@ export async function processInstallation({
       await Repository.bulkWrite(bulkOps);
     }
 
-    scheduleInstallation({ installationId })
+    await scheduleInstallation({ installationId })
 
     return { installation, repositories: installedRepositories };
   } catch (err) {

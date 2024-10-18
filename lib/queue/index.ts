@@ -1,11 +1,13 @@
 import { Redis } from "ioredis";
 import { Queue } from "bullmq";
-import { QueueNames } from "./enums.ts";
+import { QueueName } from "./enums.ts";
 
-export const redisClient = new Redis(Deno.env.get("REDIS_URL")!);
+export const redisClient = new Redis(Deno.env.get("REDIS_URL")!, {
+  maxRetriesPerRequest: null,
+});
 
 export const jobQueue = new Queue(
-  QueueNames.JobQueue,
+  QueueName.RepoJobQueue,
   {
     connection: redisClient,
   }
