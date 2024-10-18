@@ -1,7 +1,7 @@
 import type { Context, Probot } from "probot";
 import pluralize from "pluralize";
 import appConfig from "@/lib/app-config.ts";
-import { setUpInstallation } from "@/lib/common/process-installation.ts";
+import { setUpInstallation } from "@/lib/processors/installation.ts";
 
 function handleInstallationRepositories(
   app: Probot,
@@ -32,12 +32,11 @@ function handleInstallationRepositories(
   switch (action) {
     case "added":
       log.info(
-        `➕ ${account.type} ${account.login} added ${
-          pluralize(
-            "repository",
-            added.length,
-            true,
-          )
+        `➕ ${account.type} ${account.login} added ${pluralize(
+          "repository",
+          added.length,
+          true,
+        )
         }`,
       );
 
@@ -48,12 +47,11 @@ function handleInstallationRepositories(
       break;
     case "removed":
       log.info(
-        `➖ ${account.type} ${account.login} removed ${
-          pluralize(
-            "repository",
-            removed.length,
-            true,
-          )
+        `➖ ${account.type} ${account.login} removed ${pluralize(
+          "repository",
+          removed.length,
+          true,
+        )
         }`,
       );
 

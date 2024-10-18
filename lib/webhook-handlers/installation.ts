@@ -5,7 +5,7 @@ import {
   deleteInstallation,
   setUpInstallation,
   suspendInstallation,
-} from "@/lib/common/process-installation.ts";
+} from "@/lib/processors/installation.ts";
 
 function handleInstallation(
   app: Probot,
@@ -35,12 +35,11 @@ function handleInstallation(
   switch (action) {
     case "created":
       log.info(
-        `🤗 ${account.type} ${account.login} installed on ${
-          pluralize(
-            "repository",
-            repositories?.length,
-            true,
-          )
+        `🤗 ${account.type} ${account.login} installed on ${pluralize(
+          "repository",
+          repositories?.length,
+          true,
+        )
         }`,
       );
 

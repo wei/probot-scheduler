@@ -5,7 +5,7 @@ import {
   getInstallationByLogin,
   processInstallation,
   processInstallationByLogin,
-} from "@/lib/common/process-installation.ts";
+} from "@/lib/processors/installation.ts";
 
 const adminInstallationRouteHandlers = (app: Probot) => {
   async function get(req: Request, res: Response) {

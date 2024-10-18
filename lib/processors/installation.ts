@@ -2,6 +2,7 @@ import type { Context, Probot } from "probot";
 import type { AnyBulkWriteOperation } from "mongoose";
 import Installation from "@/models/Installation.ts";
 import Repository, { type RepositorySchemaType } from "@/models/Repository.ts";
+import { scheduleInstallation, unscheduleInstallation } from "@/lib/processors/scheduling.ts";
 
 export function setUpInstallation({
   app,
@@ -44,6 +45,7 @@ export async function processInstallation({
     app.log.info(
       `Skipping reset for suspended installation ${installationId}`,
     );
+    unscheduleInstallation({ installationId });
     return;
   }
 
@@ -130,6 +132,8 @@ export async function processInstallation({
       await Repository.bulkWrite(bulkOps);
     }
 
+    scheduleInstallation({ installationId })
+
     return { installation, repositories: installedRepositories };
   } catch (err) {
     app.log.error(
@@ -151,6 +155,8 @@ export async function deleteInstallation({
 
   log.info(`Deleting installation ${installation.account.login}`);
 
+  await unscheduleInstallation({ installationId: installation.id });
+
   // Delete installation and repositories concurrently
   await Promise.all([
     Installation.findOneAndDelete({ id: installation.id }),
@@ -168,6 +174,8 @@ export async function suspendInstallation({
   const { installation } = payload;
 
   log.info(`Suspending installation ${installation.account.login}`);
+
+  await unscheduleInstallation({ installationId: installation.id });
 
   await Installation.findOneAndUpdate(
     { id: installation.id },

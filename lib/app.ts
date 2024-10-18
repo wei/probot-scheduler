@@ -1,7 +1,7 @@
 import { Probot } from "probot";
-import handleInstallation from "@/lib/handlers/installation.ts";
-import handleInstallationRepositories from "@/lib/handlers/installation-repositories.ts";
-import handleInstallationTarget from "@/lib/handlers/installation-target.ts";
+import handleInstallation from "@/lib/webhook-handlers/installation.ts";
+import handleInstallationRepositories from "@/lib/webhook-handlers/installation-repositories.ts";
+import handleInstallationTarget from "@/lib/webhook-handlers/installation-target.ts";
 
 function app(app: Probot) {
   app.on("installation", handleInstallation.bind(null, app));
