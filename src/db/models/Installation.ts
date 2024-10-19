@@ -67,7 +67,7 @@ const InstallationSchema = new Schema<
   },
 });
 
-export default model<
+export const Installation = model<
   | Context<"installation">["payload"]["installation"]
   | Context<"installation.suspend">["payload"]["installation"]
 >("probot-scheduler.installation", InstallationSchema);

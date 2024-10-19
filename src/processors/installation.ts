@@ -1,11 +1,11 @@
 import type { Context, Probot } from "probot";
 import type { AnyBulkWriteOperation } from "mongoose";
-import Installation from "@/db/Installation.ts";
-import Repository, { type RepositorySchemaType } from "@/db/Repository.ts";
 import {
-  scheduleInstallation,
-  unscheduleInstallation,
-} from "@/lib/processors/scheduling.ts";
+  Installation,
+  Repository,
+  type RepositorySchemaType,
+} from "@src/db/index.ts";
+import { scheduleInstallation, unscheduleInstallation } from "./scheduling.ts";
 
 export function setUpInstallation({
   app,

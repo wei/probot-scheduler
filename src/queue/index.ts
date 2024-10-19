@@ -1,6 +1,6 @@
 import { Redis } from "ioredis";
 import { Queue } from "bullmq";
-import { appConfig } from "@/lib/helpers.ts";
+import { appConfig } from "@src/utils/index.ts";
 import { QueueName } from "./enums.ts";
 
 export const redisClient = new Redis(appConfig.redisConfig!, {

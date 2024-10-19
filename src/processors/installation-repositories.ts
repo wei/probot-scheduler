@@ -1,9 +1,6 @@
 import { Context, type Probot } from "probot";
-import Repository from "@/db/Repository.ts";
-import {
-  scheduleRepository,
-  unscheduleRepository,
-} from "@/lib/processors/scheduling.ts";
+import { Repository } from "@src/db/index.ts";
+import { scheduleRepository, unscheduleRepository } from "./scheduling.ts";
 
 export async function processAddInstallationRepositories({
   app,

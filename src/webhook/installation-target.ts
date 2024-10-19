@@ -1,6 +1,6 @@
 import type { Context, Probot } from "probot";
-import { appConfig } from "@/lib/helpers.ts";
-import { setUpInstallation } from "@/lib/processors/installation.ts";
+import { appConfig } from "@src/utils/index.ts";
+import { setUpInstallation } from "@src/processors/installation.ts";
 
 function handleInstallationTarget(
   app: Probot,

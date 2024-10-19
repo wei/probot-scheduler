@@ -1,8 +1,8 @@
 import "@std/dotenv/load";
 import { createProbot, type Probot } from "probot";
-import { getProbotOctokit } from "@/lib/helpers.ts";
-import { connectMongoDB, disconnectMongoDB } from "@/db/index.ts";
-import { processInstallation } from "@/lib/processors/installation.ts";
+import { getProbotOctokit } from "@src/utils/index.ts";
+import { connectMongoDB, disconnectMongoDB } from "@src/db/index.ts";
+import { processInstallation } from "@src/processors/installation.ts";
 
 async function fullSync(app: Probot = createProbot()) {
   const octokit = getProbotOctokit();

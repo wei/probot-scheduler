@@ -1,5 +1,5 @@
 import type { Probot } from "probot";
-import Installation from "@/db/Installation.ts";
+import { Installation } from "@src/db/index.ts";
 import { getInstallation, processInstallation } from "./installation.ts";
 
 export async function processInstallationByLogin({

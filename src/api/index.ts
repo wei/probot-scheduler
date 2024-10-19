@@ -1,9 +1,9 @@
 import "@std/dotenv/load";
 import express from "express";
 import { createNodeMiddleware, createProbot } from "probot";
-import { appConfig } from "@/lib/helpers.ts";
-import createSchedulerApp from "@/index.ts";
-import { connectMongoDB, disconnectMongoDB } from "@/db/index.ts";
+import createSchedulerApp from "../../index.ts";
+import { appConfig } from "@src/utils/index.ts";
+import { connectMongoDB, disconnectMongoDB } from "@src/db/index.ts";
 import createRouter from "./router/index.ts";
 import process from "node:process";
 
@@ -28,6 +28,7 @@ server.listen(appConfig.port, () => {
   );
 });
 
+// Handle app termination
 process.on("SIGINT", async () => {
   await disconnectMongoDB();
   console.info("[MongoDB] Connection closed due to app termination");

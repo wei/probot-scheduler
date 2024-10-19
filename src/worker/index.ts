@@ -1,7 +1,7 @@
 import "@std/dotenv/load";
 import { Worker } from "bullmq";
-import { QueueName } from "@/lib/queue/enums.ts";
-import { redisClient } from "@/lib/queue/index.ts";
+import { QueueName } from "@src/queue/enums.ts";
+import { redisClient } from "@src/queue/index.ts";
 import repoJobProcessor from "./repo-job-processor.ts";
 
 const worker = new Worker(

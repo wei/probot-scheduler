@@ -3,17 +3,18 @@ import type { Request, Response } from "express";
 import {
   getInstallation,
   processInstallation,
-} from "@/lib/processors/installation.ts";
+} from "@src/processors/installation.ts";
 import {
   getInstallationByLogin,
   processInstallationByLogin,
-} from "@/lib/processors/installation-helper.ts";
+} from "@src/processors/installation-helper.ts";
 
 const adminInstallationRouteHandlers = (app: Probot) => {
   async function get(req: Request, res: Response) {
     try {
       const installationIdOrLogin: string = req.params.installationIdOrLogin;
       const isNumeric = /^\d+$/.test(installationIdOrLogin);
+
       const response = await (isNumeric
         ? getInstallation({
           app,
@@ -33,10 +34,12 @@ const adminInstallationRouteHandlers = (app: Probot) => {
       return res.status(statusCode).json({ error: errorMessage });
     }
   }
+
   async function post(req: Request, res: Response) {
     try {
       const installationIdOrLogin: string = req.params.installationIdOrLogin;
       const isNumeric = /^\d+$/.test(installationIdOrLogin);
+
       await (isNumeric
         ? processInstallation({
           app,
@@ -56,9 +59,11 @@ const adminInstallationRouteHandlers = (app: Probot) => {
       return res.status(statusCode).json({ error: errorMessage });
     }
   }
+
   return {
     get,
     post,
   };
 };
+
 export default adminInstallationRouteHandlers;

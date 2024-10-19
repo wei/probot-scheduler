@@ -1,5 +1,5 @@
-import Repository, { RepositorySchemaType } from "@/db/Repository.ts";
-import { addJob, scheduleJob, unscheduleJob } from "@/lib/queue/index.ts";
+import { Repository, type RepositorySchemaType } from "@src/db/index.ts";
+import { addJob, scheduleJob, unscheduleJob } from "@src/queue/index.ts";
 
 export async function scheduleInstallation({
   installationId,

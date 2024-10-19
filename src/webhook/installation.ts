@@ -1,11 +1,11 @@
 import type { Context, Probot } from "probot";
 import pluralize from "pluralize";
-import { appConfig } from "@/lib/helpers.ts";
+import { appConfig } from "@src/utils/index.ts";
 import {
   deleteInstallation,
   setUpInstallation,
   suspendInstallation,
-} from "@/lib/processors/installation.ts";
+} from "@src/processors/installation.ts";
 
 function handleInstallation(
   app: Probot,

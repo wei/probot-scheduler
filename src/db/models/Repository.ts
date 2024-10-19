@@ -91,7 +91,7 @@ const RepositorySchema = new Schema<RepositorySchemaType>({
   },
 });
 
-export default model<RepositorySchemaType>(
+export const Repository = model<RepositorySchemaType>(
   "probot-scheduler.repository",
   RepositorySchema,
 );
