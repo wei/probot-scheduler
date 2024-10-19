@@ -2,12 +2,12 @@ import "@std/dotenv/load";
 import { Worker } from "bullmq";
 import { QueueName } from "@/lib/queue/enums.ts";
 import { redisClient } from "@/lib/queue/index.ts";
-import repoJobWorker from "@/lib/worker/repo-job-worker.ts";
+import repoJobProcessor from "./repo-job-processor.ts";
 
 const worker = new Worker(
   QueueName.RepoJobQueue,
   // `${import.meta.dirname}/repo-job-worker.ts`,
-  repoJobWorker,
+  repoJobProcessor,
   {
     connection: redisClient,
     concurrency: 3,

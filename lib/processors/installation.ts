@@ -209,8 +209,8 @@ export async function getInstallation({
   const installation = await Installation.findOne({ id: installationId })
     .lean();
   if (!installation) {
-    app.log.warn(`Installation ${installationId} not found`);
-    throw new Error(`Installation not found for Id ${installationId}`);
+    app.log.warn(`Installation not found: ${installationId}`);
+    throw new Error(`Installation not found: ${installationId}`);
   }
 
   const repositories = await Repository.find({

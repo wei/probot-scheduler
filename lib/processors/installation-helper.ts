@@ -14,8 +14,8 @@ export async function processInstallationByLogin({
   }, { id: 1, _id: 0 }).lean();
 
   if (!installation) {
-    app.log.warn(`Installation ${installationLogin} not found`);
-    return new Error(`Installation not found for ${installationLogin}`);
+    app.log.warn(`Installation not found: ${installationLogin}`);
+    return new Error(`Installation not found: ${installationLogin}`);
   }
 
   return processInstallation({
@@ -36,8 +36,8 @@ export async function getInstallationByLogin({
   }, { id: 1, _id: 0 }).lean();
 
   if (!installation) {
-    app.log.warn(`Installation ${installationLogin} not found`);
-    throw new Error(`Installation not found for ${installationLogin}`);
+    app.log.warn(`Installation not found: ${installationLogin}`);
+    throw new Error(`Installation not found: ${installationLogin}`);
   }
 
   return getInstallation({

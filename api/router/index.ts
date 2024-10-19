@@ -1,7 +1,7 @@
 import express from "express";
 import type { Request, Response } from "express";
 import type { Probot } from "probot";
-import adminInstallationRouteHandlers from "@/lib/router/admin-installation.ts";
+import adminInstallationRouteHandlers from "./admin-installation.ts";
 
 const createRouter = (app: Probot) => {
   const router = express.Router();

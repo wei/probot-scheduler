@@ -12,9 +12,11 @@ const InstallationSchema = new Schema<
   account: {
     id: {
       type: Number,
+      index: true,
     },
     login: {
       type: String,
+      index: true,
     },
     type: {
       type: String,
@@ -68,4 +70,4 @@ const InstallationSchema = new Schema<
 export default model<
   | Context<"installation">["payload"]["installation"]
   | Context<"installation.suspend">["payload"]["installation"]
->("Installation", InstallationSchema);
+>("probot-scheduler.installation", InstallationSchema);

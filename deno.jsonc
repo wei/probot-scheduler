@@ -1,9 +1,9 @@
 {
   "tasks": {
-    "dev": "deno run --watch='**/*.ts' -A index.ts",
+    "dev": "deno run -A api/index.ts",
     "dev:skip-full-sync": "deno task dev --skip-full-sync",
-    "dev:worker": "deno run -A lib/worker/index.ts",
-    "full-sync": "deno run --watch='scripts/full-sync.ts' -A scripts/full-sync.ts",
+    "dev:worker": "deno run -A worker/index.ts",
+    "full-sync": "deno run -A scripts/full-sync.ts",
     "hook": "deno run --allow-read --allow-run --allow-write https://deno.land/x/deno_hooks@0.1.1/mod.ts"
   },
   "imports": {

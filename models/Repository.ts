@@ -29,9 +29,11 @@ const RepositorySchema = new Schema<RepositorySchemaType>({
   owner: {
     id: {
       type: Number,
+      index: true,
     },
     login: {
       type: String,
+      index: true,
     },
     type: {
       type: String,
@@ -89,4 +91,7 @@ const RepositorySchema = new Schema<RepositorySchemaType>({
   },
 });
 
-export default model<RepositorySchemaType>("Repository", RepositorySchema);
+export default model<RepositorySchemaType>(
+  "probot-scheduler.repository",
+  RepositorySchema,
+);
