@@ -1,8 +1,9 @@
 import { Redis } from "ioredis";
 import { Queue } from "bullmq";
+import { appConfig } from "@/lib/helpers.ts";
 import { QueueName } from "./enums.ts";
 
-export const redisClient = new Redis(Deno.env.get("REDIS_URL")!, {
+export const redisClient = new Redis(appConfig.redisConfig!, {
   maxRetriesPerRequest: null,
 });
 

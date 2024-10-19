@@ -1,7 +1,7 @@
 import "@std/dotenv/load";
-import mongoose from "mongoose";
 import { createProbot, type Probot } from "probot";
 import { getProbotOctokit } from "@/lib/helpers.ts";
+import { connectMongoDB, disconnectMongoDB } from "@/db/index.ts";
 import { processInstallation } from "@/lib/processors/installation.ts";
 
 async function fullSync(app: Probot = createProbot()) {
@@ -28,16 +28,14 @@ async function main() {
   let exitCode = 0;
 
   try {
-    await mongoose.connect(Deno.env.get("MONGODB_URL") || "");
-    console.log(`MongoDB connection state: ${mongoose.connection.readyState}`);
+    await connectMongoDB();
 
     await fullSync();
   } catch (error) {
     console.error("Error:", error);
     exitCode = 1;
   } finally {
-    await mongoose.disconnect();
-    console.log("MongoDB connection closed.");
+    await disconnectMongoDB();
     Deno.exit(exitCode);
   }
 }

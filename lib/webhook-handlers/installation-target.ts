@@ -1,5 +1,5 @@
 import type { Context, Probot } from "probot";
-import appConfig from "@/lib/app-config.ts";
+import { appConfig } from "@/lib/helpers.ts";
 import { setUpInstallation } from "@/lib/processors/installation.ts";
 
 function handleInstallationTarget(
@@ -14,7 +14,7 @@ function handleInstallationTarget(
   } = context.payload;
 
   const log = context.log.child({
-    name: appConfig().name,
+    name: appConfig.name,
     event: context.name,
     action,
     account: account.id,

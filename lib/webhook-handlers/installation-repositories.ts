@@ -1,6 +1,6 @@
 import type { Context, Probot } from "probot";
 import pluralize from "pluralize";
-import appConfig from "@/lib/app-config.ts";
+import { appConfig } from "@/lib/helpers.ts";
 import {
   processAddInstallationRepositories,
   processRemoveInstallationRepositories,
@@ -23,7 +23,7 @@ async function handleInstallationRepositories(
   } = context.payload;
 
   const log = context.log.child({
-    name: appConfig().name,
+    name: appConfig.name,
     event: context.name,
     action,
     account: account.id,

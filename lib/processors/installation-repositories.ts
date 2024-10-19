@@ -1,5 +1,5 @@
 import { Context, type Probot } from "probot";
-import Repository from "@/models/Repository.ts";
+import Repository from "@/db/Repository.ts";
 import {
   scheduleRepository,
   unscheduleRepository,

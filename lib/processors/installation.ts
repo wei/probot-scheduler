@@ -1,7 +1,7 @@
 import type { Context, Probot } from "probot";
 import type { AnyBulkWriteOperation } from "mongoose";
-import Installation from "@/models/Installation.ts";
-import Repository, { type RepositorySchemaType } from "@/models/Repository.ts";
+import Installation from "@/db/Installation.ts";
+import Repository, { type RepositorySchemaType } from "@/db/Repository.ts";
 import {
   scheduleInstallation,
   unscheduleInstallation,
