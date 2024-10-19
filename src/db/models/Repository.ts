@@ -91,6 +91,8 @@ const RepositorySchema = new Schema<RepositorySchemaType>({
   },
 });
 
+RepositorySchema.index({ id: 1, installation_id: 1 }, { unique: true });
+
 export const Repository = model<RepositorySchemaType>(
   "probot-scheduler.repository",
   RepositorySchema,

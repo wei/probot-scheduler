@@ -172,11 +172,8 @@ export async function deleteInstallation({
 
   await unscheduleInstallation({ installationId: installation.id });
 
-  // Delete installation and repositories concurrently
-  await Promise.all([
-    Installation.findOneAndDelete({ id: installation.id }),
-    Repository.deleteMany({ installation_id: installation.id }),
-  ]);
+  await Installation.findOneAndDelete({ id: installation.id });
+  await Repository.deleteMany({ installation_id: installation.id });
 }
 
 export async function suspendInstallation({
@@ -197,6 +194,8 @@ export async function suspendInstallation({
     installation,
     { new: true, upsert: true },
   ).lean();
+
+  await Repository.deleteMany({ installation_id: installation.id });
 }
 
 export async function getInstallation({
