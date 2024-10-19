@@ -39,12 +39,14 @@ export async function unscheduleInstallation({
 }
 
 export async function scheduleRepository(repository: RepositorySchemaType, {
-  triggerImmediately
+  triggerImmediately,
 }: {
   triggerImmediately?: boolean;
 } = {}) {
   const {
-    id: repository_id, installation_id, full_name,
+    id: repository_id,
+    installation_id,
+    full_name,
   } = repository;
 
   await scheduleJob(
@@ -56,7 +58,7 @@ export async function scheduleRepository(repository: RepositorySchemaType, {
     },
     {
       cron: "* * * * *", // TODO: Change this to a more reasonable value
-    }
+    },
   );
 
   if (triggerImmediately) {
@@ -71,7 +73,9 @@ export async function scheduleRepository(repository: RepositorySchemaType, {
 
 export async function unscheduleRepository(repository: RepositorySchemaType) {
   const {
-    id: repository_id, installation_id, full_name,
+    id: repository_id,
+    installation_id,
+    full_name,
   } = repository;
 
   await unscheduleJob({

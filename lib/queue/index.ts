@@ -10,7 +10,7 @@ export const repoJobQueue = new Queue(
   QueueName.RepoJobQueue,
   {
     connection: redisClient,
-  }
+  },
 );
 
 export * from "./enums.ts";

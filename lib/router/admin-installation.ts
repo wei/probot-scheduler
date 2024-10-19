@@ -6,7 +6,7 @@ import {
 } from "@/lib/processors/installation.ts";
 import {
   getInstallationByLogin,
-  processInstallationByLogin
+  processInstallationByLogin,
 } from "@/lib/processors/installation-helper.ts";
 
 const adminInstallationRouteHandlers = (app: Probot) => {

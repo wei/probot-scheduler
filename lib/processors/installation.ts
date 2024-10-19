@@ -2,7 +2,10 @@ import type { Context, Probot } from "probot";
 import type { AnyBulkWriteOperation } from "mongoose";
 import Installation from "@/models/Installation.ts";
 import Repository, { type RepositorySchemaType } from "@/models/Repository.ts";
-import { scheduleInstallation, unscheduleInstallation } from "@/lib/processors/scheduling.ts";
+import {
+  scheduleInstallation,
+  unscheduleInstallation,
+} from "@/lib/processors/scheduling.ts";
 
 export function setUpInstallation({
   app,
@@ -10,9 +13,9 @@ export function setUpInstallation({
     payload: {
       action,
       installation: {
-        id: installationId
-      }
-    }
+        id: installationId,
+      },
+    },
   },
 }: {
   app: Probot;
@@ -21,7 +24,8 @@ export function setUpInstallation({
   return processInstallation({
     app,
     installationId,
-    triggerImmediately: ["created", "unsuspend", "new_permissions_accepted"].includes(action),
+    triggerImmediately: ["created", "unsuspend", "new_permissions_accepted"]
+      .includes(action),
   });
 }
 
@@ -88,7 +92,7 @@ export async function processInstallation({
       } else {
         repositoriesToAdd.push(repo);
       }
-    };
+    }
 
     const repositoryIdsToRemove = [
       ...existingRepositoriesIdSet,
@@ -137,7 +141,7 @@ export async function processInstallation({
           },
         });
       }
-    };
+    }
 
     if (bulkOps.length > 0) {
       await Repository.bulkWrite(bulkOps);
@@ -215,4 +219,3 @@ export async function getInstallation({
 
   return { installation, repositories };
 }
-

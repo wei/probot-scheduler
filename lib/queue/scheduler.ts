@@ -1,4 +1,4 @@
-import { repoJobQueue, JobPriority, RepoJobData } from "./index.ts";
+import { JobPriority, RepoJobData, repoJobQueue } from "./index.ts";
 
 function getJobSchedulerId(jobData: RepoJobData) {
   return `[job-scheduler_${jobData.installation_id}_${jobData.repository_id}]`;
@@ -14,7 +14,7 @@ export function scheduleJob(jobData: RepoJobData, options: {
 }) {
   const {
     cron,
-    jobPriority = JobPriority.Normal
+    jobPriority = JobPriority.Normal,
   } = options;
 
   return repoJobQueue.upsertJobScheduler(
@@ -50,6 +50,6 @@ export function addJob(jobData: RepoJobData, jobPriority = JobPriority.High) {
 }
 
 export async function unscheduleJob(jobData: RepoJobData) {
-  await repoJobQueue.removeJobScheduler(getJobSchedulerId(jobData))
-  await repoJobQueue.remove(getJobId(jobData))
+  await repoJobQueue.removeJobScheduler(getJobSchedulerId(jobData));
+  await repoJobQueue.remove(getJobId(jobData));
 }

@@ -35,11 +35,12 @@ function handleInstallation(
   switch (action) {
     case "created":
       log.info(
-        `🤗 ${account.type} ${account.login} installed on ${pluralize(
-          "repository",
-          repositories?.length,
-          true,
-        )
+        `🤗 ${account.type} ${account.login} installed on ${
+          pluralize(
+            "repository",
+            repositories?.length,
+            true,
+          )
         }`,
       );
 

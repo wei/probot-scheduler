@@ -3,7 +3,7 @@ import pluralize from "pluralize";
 import appConfig from "@/lib/app-config.ts";
 import {
   processAddInstallationRepositories,
-  processRemoveInstallationRepositories
+  processRemoveInstallationRepositories,
 } from "@/lib/processors/installation-repositories.ts";
 import { setUpInstallation } from "@/lib/processors/installation.ts";
 
@@ -36,11 +36,13 @@ async function handleInstallationRepositories(
   switch (action) {
     case "added":
       log.info(
-        `➕ ${account.type} ${account.login} added ${pluralize(
-          "repository",
-          added.length,
-          true,
-        )}`,
+        `➕ ${account.type} ${account.login} added ${
+          pluralize(
+            "repository",
+            added.length,
+            true,
+          )
+        }`,
       );
 
       try {
@@ -49,20 +51,25 @@ async function handleInstallationRepositories(
           context,
         });
       } catch (err) {
-        log.error(err, `❌ Failed to add or schedule some repositories, triggering full installation setup`);
+        log.error(
+          err,
+          `❌ Failed to add or schedule some repositories, triggering full installation setup`,
+        );
         setUpInstallation({
           app,
           context,
-        })
+        });
       }
       break;
     case "removed":
       log.info(
-        `➖ ${account.type} ${account.login} removed ${pluralize(
-          "repository",
-          removed.length,
-          true,
-        )}`,
+        `➖ ${account.type} ${account.login} removed ${
+          pluralize(
+            "repository",
+            removed.length,
+            true,
+          )
+        }`,
       );
 
       try {
@@ -71,11 +78,14 @@ async function handleInstallationRepositories(
           context,
         });
       } catch (err) {
-        log.error(err, `❌ Failed to remove or unschedule some repositories, triggering full installation setup`);
+        log.error(
+          err,
+          `❌ Failed to remove or unschedule some repositories, triggering full installation setup`,
+        );
         setUpInstallation({
           app,
           context,
-        })
+        });
       }
       break;
     default:

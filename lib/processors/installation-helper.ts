@@ -1,9 +1,10 @@
 import type { Probot } from "probot";
 import Installation from "@/models/Installation.ts";
-import { processInstallation, getInstallation } from "./installation.ts";
+import { getInstallation, processInstallation } from "./installation.ts";
 
 export async function processInstallationByLogin({
-  app, installationLogin,
+  app,
+  installationLogin,
 }: {
   app: Probot;
   installationLogin: string;
@@ -24,7 +25,8 @@ export async function processInstallationByLogin({
 }
 
 export async function getInstallationByLogin({
-  app, installationLogin,
+  app,
+  installationLogin,
 }: {
   app: Probot;
   installationLogin: string;
