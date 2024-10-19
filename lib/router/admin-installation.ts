@@ -2,10 +2,12 @@ import type { Probot } from "probot";
 import type { Request, Response } from "express";
 import {
   getInstallation,
-  getInstallationByLogin,
   processInstallation,
-  processInstallationByLogin,
 } from "@/lib/processors/installation.ts";
+import {
+  getInstallationByLogin,
+  processInstallationByLogin
+} from "@/lib/processors/installation-helper.ts";
 
 const adminInstallationRouteHandlers = (app: Probot) => {
   async function get(req: Request, res: Response) {

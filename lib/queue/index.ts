@@ -6,7 +6,7 @@ export const redisClient = new Redis(Deno.env.get("REDIS_URL")!, {
   maxRetriesPerRequest: null,
 });
 
-export const jobQueue = new Queue(
+export const repoJobQueue = new Queue(
   QueueName.RepoJobQueue,
   {
     connection: redisClient,

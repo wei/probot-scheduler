@@ -1,9 +1,13 @@
 import type { Context, Probot } from "probot";
 import pluralize from "pluralize";
 import appConfig from "@/lib/app-config.ts";
+import {
+  processAddInstallationRepositories,
+  processRemoveInstallationRepositories
+} from "@/lib/processors/installation-repositories.ts";
 import { setUpInstallation } from "@/lib/processors/installation.ts";
 
-function handleInstallationRepositories(
+async function handleInstallationRepositories(
   app: Probot,
   context: Context<"installation_repositories">,
 ) {
@@ -36,14 +40,21 @@ function handleInstallationRepositories(
           "repository",
           added.length,
           true,
-        )
-        }`,
+        )}`,
       );
 
-      setUpInstallation({
-        app,
-        context,
-      });
+      try {
+        await processAddInstallationRepositories({
+          app,
+          context,
+        });
+      } catch (err) {
+        log.error(err, `❌ Failed to add or schedule some repositories, triggering full installation setup`);
+        setUpInstallation({
+          app,
+          context,
+        })
+      }
       break;
     case "removed":
       log.info(
@@ -51,14 +62,21 @@ function handleInstallationRepositories(
           "repository",
           removed.length,
           true,
-        )
-        }`,
+        )}`,
       );
 
-      setUpInstallation({
-        app,
-        context,
-      });
+      try {
+        await processRemoveInstallationRepositories({
+          app,
+          context,
+        });
+      } catch (err) {
+        log.error(err, `❌ Failed to remove or unschedule some repositories, triggering full installation setup`);
+        setUpInstallation({
+          app,
+          context,
+        })
+      }
       break;
     default:
       log.warn(

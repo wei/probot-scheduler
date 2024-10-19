@@ -6,23 +6,33 @@ import { scheduleInstallation, unscheduleInstallation } from "@/lib/processors/s
 
 export function setUpInstallation({
   app,
-  context: { payload: { installation: { id: installationId } } },
+  context: {
+    payload: {
+      action,
+      installation: {
+        id: installationId
+      }
+    }
+  },
 }: {
   app: Probot;
-  context: Context<"installation" | "installation_target">;
+  context: Context<"installation">;
 }) {
   return processInstallation({
     app,
     installationId,
+    triggerImmediately: ["created", "unsuspend", "new_permissions_accepted"].includes(action),
   });
 }
 
 export async function processInstallation({
   app,
   installationId,
+  triggerImmediately = false,
 }: {
   app: Probot;
   installationId: number;
+  triggerImmediately?: boolean;
 }) {
   const octokit = await app.auth(installationId);
 
@@ -45,7 +55,7 @@ export async function processInstallation({
     installation.suspended_at
   ) {
     app.log.info(
-      `Skipping reset for suspended installation ${installationId}`,
+      `ℹ️ Skipping reset for suspended installation ${installationId}`,
     );
     return;
   }
@@ -71,14 +81,14 @@ export async function processInstallation({
     );
 
     // Determine repositories to add, update, and remove
-    installedRepositories.forEach((repo) => {
+    for (const repo of installedRepositories) {
       if (existingRepositoriesIdSet.has(repo.id)) {
         repositoriesToUpdate.push(repo);
         existingRepositoriesIdSet.delete(repo.id);
       } else {
         repositoriesToAdd.push(repo);
       }
-    });
+    };
 
     const repositoryIdsToRemove = [
       ...existingRepositoriesIdSet,
@@ -88,7 +98,7 @@ export async function processInstallation({
     const bulkOps: AnyBulkWriteOperation<RepositorySchemaType>[] = [];
 
     // Add repositories
-    repositoriesToAdd.forEach((repo) => {
+    for (const repo of repositoriesToAdd) {
       bulkOps.push({
         insertOne: {
           document: {
@@ -97,7 +107,7 @@ export async function processInstallation({
           },
         },
       });
-    });
+    }
 
     // Remove repositories
     if (repositoryIdsToRemove.length > 0) {
@@ -112,7 +122,7 @@ export async function processInstallation({
     }
 
     // Update repositories
-    repositoriesToUpdate.forEach((repo) => {
+    for (const repo of repositoriesToUpdate) {
       if (repo) {
         bulkOps.push({
           updateOne: {
@@ -127,19 +137,19 @@ export async function processInstallation({
           },
         });
       }
-    });
+    };
 
     if (bulkOps.length > 0) {
       await Repository.bulkWrite(bulkOps);
     }
 
-    await scheduleInstallation({ installationId })
+    await scheduleInstallation({ installationId, triggerImmediately });
 
     return { installation, repositories: installedRepositories };
   } catch (err) {
     app.log.error(
       err,
-      `Failed to retrieve repositories for ${installationId}`,
+      `❌ Failed to retrieve repositories for ${installationId}`,
     );
     throw new Error(`Failed to retrieve repositories for ${installationId}`);
   }
@@ -154,7 +164,7 @@ export async function deleteInstallation({
 }) {
   const { installation } = payload;
 
-  log.info(`Deleting installation ${installation.account.login}`);
+  log.info(`ℹ️ Deleting installation ${installation.account.login}`);
 
   await unscheduleInstallation({ installationId: installation.id });
 
@@ -174,7 +184,7 @@ export async function suspendInstallation({
 }) {
   const { installation } = payload;
 
-  log.info(`Suspending installation ${installation.account.login}`);
+  log.info(`ℹ️ Suspending installation ${installation.account.login}`);
 
   await unscheduleInstallation({ installationId: installation.id });
 
@@ -206,46 +216,3 @@ export async function getInstallation({
   return { installation, repositories };
 }
 
-export async function processInstallationByLogin({
-  app,
-  installationLogin,
-}: {
-  app: Probot;
-  installationLogin: string;
-}) {
-  const installation = await Installation.findOne({
-    "account.login": installationLogin,
-  }, { id: 1, _id: 0 }).lean();
-
-  if (!installation) {
-    app.log.warn(`Installation ${installationLogin} not found`);
-    return new Error(`Installation not found for ${installationLogin}`);
-  }
-
-  return processInstallation({
-    app,
-    installationId: installation.id,
-  });
-}
-
-export async function getInstallationByLogin({
-  app,
-  installationLogin,
-}: {
-  app: Probot;
-  installationLogin: string;
-}) {
-  const installation = await Installation.findOne({
-    "account.login": installationLogin,
-  }, { id: 1, _id: 0 }).lean();
-
-  if (!installation) {
-    app.log.warn(`Installation ${installationLogin} not found`);
-    throw new Error(`Installation not found for ${installationLogin}`);
-  }
-
-  return getInstallation({
-    app,
-    installationId: installation.id,
-  });
-}

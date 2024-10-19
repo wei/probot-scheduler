@@ -1,55 +1,55 @@
-import { jobQueue, JobPriority, RepoJobData } from "./index.ts";
+import { repoJobQueue, JobPriority, RepoJobData } from "./index.ts";
 
 function getJobSchedulerId(jobData: RepoJobData) {
-  return `[job-scheduler::${jobData.installation_id}:${jobData.repository_id}]`;
+  return `[job-scheduler_${jobData.installation_id}_${jobData.repository_id}]`;
 }
 
 function getJobId(jobData: RepoJobData) {
-  return `[job::${jobData.installation_id}:${jobData.repository_id}]`;
+  return `[job_${jobData.installation_id}_${jobData.repository_id}]`;
 }
 
 export function scheduleJob(jobData: RepoJobData, options: {
   cron: string;
-  immediately?: boolean;
   jobPriority?: JobPriority;
 }) {
-  const { cron, immediately = false, jobPriority = JobPriority.Normal } = options;
-  return jobQueue.upsertJobScheduler(
+  const {
+    cron,
+    jobPriority = JobPriority.Normal
+  } = options;
+
+  return repoJobQueue.upsertJobScheduler(
     getJobSchedulerId(jobData),
     {
       pattern: cron,
-      immediately,
+      // Immediately seem to have a bug and ignores pattern (cron) when set
+      immediately: false,
     },
     {
       name: getJobId(jobData),
       data: jobData,
       opts: {
         priority: jobPriority,
-        attempts: 1,
-        deduplication: {
-          id: getJobId(jobData),
-        }
       },
     },
   );
 }
 
 export function addJob(jobData: RepoJobData, jobPriority = JobPriority.High) {
-  return jobQueue.add(
-    getJobId(jobData),
+  const jobId = getJobId(jobData);
+  return repoJobQueue.add(
+    jobId,
     jobData,
     {
+      jobId,
       priority: jobPriority,
       deduplication: {
-        id: getJobId(jobData),
-      }
+        id: jobId,
+      },
     },
   );
 }
 
-export function unscheduleJob(jobData: RepoJobData) {
-  return Promise.all([
-    jobQueue.removeJobScheduler(getJobSchedulerId(jobData)),
-    jobQueue.remove(getJobId(jobData)),
-  ]);
+export async function unscheduleJob(jobData: RepoJobData) {
+  await repoJobQueue.removeJobScheduler(getJobSchedulerId(jobData))
+  await repoJobQueue.remove(getJobId(jobData))
 }
