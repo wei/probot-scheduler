@@ -1,11 +1,13 @@
 import { JobPriority, RepoJobData, repoJobQueue } from "./index.ts";
 
-function getJobSchedulerId(jobData: RepoJobData) {
-  return `[job-scheduler_${jobData.installation_id}_${jobData.repository_id}]`;
-}
-
-function getJobId(jobData: RepoJobData) {
-  return `[job_${jobData.installation_id}_${jobData.repository_id}]`;
+function getId(
+  type: "job-scheduler" | "job" | "oneoff-job",
+  jobData: RepoJobData,
+  suffix?: string,
+) {
+  return `[${type}_${jobData.installation_id}_${jobData.repository_id}${
+    suffix ? `_${suffix}` : ""
+  }]`;
 }
 
 export function scheduleJob(jobData: RepoJobData, options: {
@@ -18,14 +20,14 @@ export function scheduleJob(jobData: RepoJobData, options: {
   } = options;
 
   return repoJobQueue.upsertJobScheduler(
-    getJobSchedulerId(jobData),
+    getId("job-scheduler", jobData),
     {
       pattern: cron,
       // Immediately seem to have a bug and ignores pattern (cron) when set
       immediately: false,
     },
     {
-      name: getJobId(jobData),
+      name: getId("job", jobData),
       data: jobData,
       opts: {
         priority: jobPriority,
@@ -35,21 +37,17 @@ export function scheduleJob(jobData: RepoJobData, options: {
 }
 
 export function addJob(jobData: RepoJobData, jobPriority = JobPriority.High) {
-  const jobId = getJobId(jobData);
+  const jobId = getId("oneoff-job", jobData, Date.now().toString());
   return repoJobQueue.add(
     jobId,
     jobData,
     {
-      jobId,
+      jobId, // Must be unique
       priority: jobPriority,
-      deduplication: {
-        id: jobId,
-      },
     },
   );
 }
 
 export async function unscheduleJob(jobData: RepoJobData) {
-  await repoJobQueue.removeJobScheduler(getJobSchedulerId(jobData));
-  await repoJobQueue.remove(getJobId(jobData));
+  await repoJobQueue.removeJobScheduler(getId("job-scheduler", jobData));
 }
