@@ -62,7 +62,7 @@ export async function scheduleRepository(repository: RepositorySchemaType, {
   );
 
   if (triggerImmediately) {
-    addJob({
+    await addJob({
       installation_id,
       repository_id,
       full_name,
