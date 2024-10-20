@@ -1,4 +1,4 @@
-import { type ApplicationFunctionOptions, Probot } from "probot";
+import type { ApplicationFunctionOptions, Probot } from "probot";
 import handleInstallation from "@src/webhook/installation.ts";
 import handleInstallationRepositories from "@src/webhook/installation-repositories.ts";
 import handleInstallationTarget from "@src/webhook/installation-target.ts";

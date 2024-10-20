@@ -1,4 +1,4 @@
-import { Context, type Probot } from "probot";
+import type { Context, Probot } from "probot";
 import { Repository } from "@src/db/index.ts";
 import { scheduleRepository, unscheduleRepository } from "./scheduling.ts";
 

@@ -1,4 +1,4 @@
-import { JobPriority, RepoJobData, repoJobQueue } from "./index.ts";
+import { JobPriority, type RepoJobData, repoJobQueue } from "./index.ts";
 
 function getId(
   type: "job-scheduler" | "job" | "oneoff-job",
