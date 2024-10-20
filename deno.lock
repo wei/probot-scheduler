@@ -1,23 +1,29 @@
 {
   "version": "4",
   "specifiers": {
-    "jsr:@std/assert@1": "1.0.6",
+    "jsr:@std/assert@^1.0.6": "1.0.6",
     "jsr:@std/cli@^1.0.6": "1.0.6",
+    "jsr:@std/data-structures@^1.0.4": "1.0.4",
     "jsr:@std/dotenv@~0.225.2": "0.225.2",
     "jsr:@std/encoding@^1.0.5": "1.0.5",
     "jsr:@std/fmt@^1.0.2": "1.0.2",
+    "jsr:@std/fs@^1.0.4": "1.0.4",
     "jsr:@std/http@1": "1.0.8",
     "jsr:@std/internal@^1.0.4": "1.0.4",
     "jsr:@std/media-types@^1.0.3": "1.0.3",
     "jsr:@std/net@^1.0.4": "1.0.4",
     "jsr:@std/path@^1.0.6": "1.0.6",
     "jsr:@std/streams@^1.0.7": "1.0.7",
+    "jsr:@std/testing@^1.0.3": "1.0.3",
     "jsr:@wei/pluralize@^8.0.1": "8.0.1",
     "npm:@octokit/auth-app@^7.1.1": "7.1.1",
+    "npm:@probot/pino@^2.5.0": "2.5.0",
+    "npm:@types/node@*": "22.5.4",
     "npm:bullmq@^5.20.0": "5.20.0",
     "npm:express@^4.21.1": "4.21.1",
     "npm:ioredis@^5.4.1": "5.4.1",
     "npm:mongoose@^8.7.1": "8.7.1",
+    "npm:pino@^9.5.0": "9.5.0",
     "npm:probot@^13.3.8": "13.3.8_@octokit+core@5.2.0_dotenv@16.4.5"
   },
   "jsr": {
@@ -30,6 +36,9 @@
     "@std/cli@1.0.6": {
       "integrity": "d22d8b38c66c666d7ad1f2a66c5b122da1704f985d3c47f01129f05abb6c5d3d"
     },
+    "@std/data-structures@1.0.4": {
+      "integrity": "fa0e20c11eb9ba673417450915c750a0001405a784e2a4e0c3725031681684a0"
+    },
     "@std/dotenv@0.225.2": {
       "integrity": "e2025dce4de6c7bca21dece8baddd4262b09d5187217e231b033e088e0c4dd23"
     },
@@ -38,6 +47,12 @@
     },
     "@std/fmt@1.0.2": {
       "integrity": "87e9dfcdd3ca7c066e0c3c657c1f987c82888eb8103a3a3baa62684ffeb0f7a7"
+    },
+    "@std/fs@1.0.4": {
+      "integrity": "2907d32d8d1d9e540588fd5fe0ec21ee638134bd51df327ad4e443aaef07123c",
+      "dependencies": [
+        "jsr:@std/path"
+      ]
     },
     "@std/http@1.0.8": {
       "integrity": "6ea1b2e8d33929967754a3b6d6c6f399ad6647d7bbb5a466c1eaf9b294a6ebcd",
@@ -65,6 +80,16 @@
     },
     "@std/streams@1.0.7": {
       "integrity": "1a93917ca0c58c01b2bfb93647189229b1702677f169b6fb61ad6241cd2e499b"
+    },
+    "@std/testing@1.0.3": {
+      "integrity": "f98c2bee53860a5916727d7e7d3abe920dd6f9edace022e2d059f00d05c2cf42",
+      "dependencies": [
+        "jsr:@std/assert",
+        "jsr:@std/data-structures",
+        "jsr:@std/fs",
+        "jsr:@std/internal",
+        "jsr:@std/path"
+      ]
     },
     "@wei/pluralize@8.0.1": {
       "integrity": "be5e3d45d99d94a31e2b9b65cbd0bac638d0061885c51859b8c5582a3d00fe8b"
@@ -374,11 +399,29 @@
     "@probot/pino@2.4.0": {
       "integrity": "sha512-KUJ3eK2zLrPny7idWm9eQbBNhCJUjm1A1ttA6U4qiR2/ONWSffVlvr8oR26L59sVhoDkv1DOGmGPZS/bvSFisw==",
       "dependencies": [
-        "@sentry/node",
+        "@sentry/node@6.19.7",
         "pino-pretty",
         "pump",
         "readable-stream@3.6.2",
         "split2@4.2.0"
+      ]
+    },
+    "@probot/pino@2.5.0": {
+      "integrity": "sha512-I7zI6MWP1wz9qvTY8U3wOWeRXY2NiuTDqf91v/LQl9oiffUHl+Z1YelRvNcvHbaUo/GK7E1mJr+Sw4dHuSGxpg==",
+      "dependencies": [
+        "@sentry/node@7.119.2",
+        "pino-pretty",
+        "pump",
+        "readable-stream@3.6.2",
+        "split2@4.2.0"
+      ]
+    },
+    "@sentry-internal/tracing@7.119.2": {
+      "integrity": "sha512-V2W+STWrafyGJhQv3ulMFXYDwWHiU6wHQAQBShsHVACiFaDrJ2kPRet38FKv4dMLlLlP2xN+ss2e5zv3tYlTiQ==",
+      "dependencies": [
+        "@sentry/core@7.119.2",
+        "@sentry/types@7.119.2",
+        "@sentry/utils@7.119.2"
       ]
     },
     "@sentry/core@6.19.7": {
@@ -386,48 +429,83 @@
       "dependencies": [
         "@sentry/hub",
         "@sentry/minimal",
-        "@sentry/types",
-        "@sentry/utils",
+        "@sentry/types@6.19.7",
+        "@sentry/utils@6.19.7",
         "tslib@1.14.1"
+      ]
+    },
+    "@sentry/core@7.119.2": {
+      "integrity": "sha512-hQr3d2yWq/2lMvoyBPOwXw1IHqTrCjOsU1vYKhAa6w9vGbJZFGhKGGE2KEi/92c3gqGn+gW/PC7cV6waCTDuVA==",
+      "dependencies": [
+        "@sentry/types@7.119.2",
+        "@sentry/utils@7.119.2"
       ]
     },
     "@sentry/hub@6.19.7": {
       "integrity": "sha512-y3OtbYFAqKHCWezF0EGGr5lcyI2KbaXW2Ik7Xp8Mu9TxbSTuwTe4rTntwg8ngPjUQU3SUHzgjqVB8qjiGqFXCA==",
       "dependencies": [
-        "@sentry/types",
-        "@sentry/utils",
+        "@sentry/types@6.19.7",
+        "@sentry/utils@6.19.7",
         "tslib@1.14.1"
+      ]
+    },
+    "@sentry/integrations@7.119.2": {
+      "integrity": "sha512-dCuXKvbUE3gXVVa696SYMjlhSP6CxpMH/gl4Jk26naEB8Xjsn98z/hqEoXLg6Nab73rjR9c/9AdKqBbwVMHyrQ==",
+      "dependencies": [
+        "@sentry/core@7.119.2",
+        "@sentry/types@7.119.2",
+        "@sentry/utils@7.119.2",
+        "localforage"
       ]
     },
     "@sentry/minimal@6.19.7": {
       "integrity": "sha512-wcYmSJOdvk6VAPx8IcmZgN08XTXRwRtB1aOLZm+MVHjIZIhHoBGZJYTVQS/BWjldsamj2cX3YGbGXNunaCfYJQ==",
       "dependencies": [
         "@sentry/hub",
-        "@sentry/types",
+        "@sentry/types@6.19.7",
         "tslib@1.14.1"
       ]
     },
     "@sentry/node@6.19.7": {
       "integrity": "sha512-gtmRC4dAXKODMpHXKfrkfvyBL3cI8y64vEi3fDD046uqYcrWdgoQsffuBbxMAizc6Ez1ia+f0Flue6p15Qaltg==",
       "dependencies": [
-        "@sentry/core",
+        "@sentry/core@6.19.7",
         "@sentry/hub",
-        "@sentry/types",
-        "@sentry/utils",
+        "@sentry/types@6.19.7",
+        "@sentry/utils@6.19.7",
         "cookie@0.4.2",
         "https-proxy-agent",
         "lru_map",
         "tslib@1.14.1"
       ]
     },
+    "@sentry/node@7.119.2": {
+      "integrity": "sha512-TPNnqxh+Myooe4jTyRiXrzrM2SH08R4+nrmBls4T7lKp2E5R/3mDSe/YTn5rRcUt1k1hPx1NgO/taG0DoS5cXA==",
+      "dependencies": [
+        "@sentry-internal/tracing",
+        "@sentry/core@7.119.2",
+        "@sentry/integrations",
+        "@sentry/types@7.119.2",
+        "@sentry/utils@7.119.2"
+      ]
+    },
     "@sentry/types@6.19.7": {
       "integrity": "sha512-jH84pDYE+hHIbVnab3Hr+ZXr1v8QABfhx39KknxqKWr2l0oEItzepV0URvbEhB446lk/S/59230dlUUIBGsXbg=="
+    },
+    "@sentry/types@7.119.2": {
+      "integrity": "sha512-ydq1tWsdG7QW+yFaTp0gFaowMLNVikIqM70wxWNK+u98QzKnVY/3XTixxNLsUtnAB4Y+isAzFhrc6Vb5GFdFeg=="
     },
     "@sentry/utils@6.19.7": {
       "integrity": "sha512-z95ECmE3i9pbWoXQrD/7PgkBAzJYR+iXtPuTkpBjDKs86O3mT+PXOT3BAn79w2wkn7/i3vOGD2xVr1uiMl26dA==",
       "dependencies": [
-        "@sentry/types",
+        "@sentry/types@6.19.7",
         "tslib@1.14.1"
+      ]
+    },
+    "@sentry/utils@7.119.2": {
+      "integrity": "sha512-TLdUCvcNgzKP0r9YD7tgCL1PEUp42TObISridsPJ5rhpVGQJvpr+Six0zIkfDUxerLYWZoK8QMm9KgFlPLNQzA==",
+      "dependencies": [
+        "@sentry/types@7.119.2"
       ]
     },
     "@types/body-parser@1.19.5": {
@@ -918,6 +996,9 @@
     "ieee754@1.2.1": {
       "integrity": "sha512-dcyqhDvX1C46lXZcVqCpK+FtMRQVdIMN6/Df5js2zouUsqG7I6sFxitIC+7KYK29KdXOLHdu9zL4sFnoVQnqaA=="
     },
+    "immediate@3.0.6": {
+      "integrity": "sha512-XXOFtyqDjNDAQxVfYxuF7g9Il/IbWmmlQg2MYKOH8ExIT1qg6xc4zyS3HaEEATgs1btfzxq15ciUiY7gjSXRGQ=="
+    },
     "indent-string@4.0.0": {
       "integrity": "sha512-EdDDZu4A2OyIK7Lr/2zG+w5jmbuk1DVBnEwREQvBzspBJkCEbRa8GxU1lghYcaGJCnRWibjDXlq779X1/y5xwg=="
     },
@@ -995,6 +1076,12 @@
     "leven@2.1.0": {
       "integrity": "sha512-nvVPLpIHUxCUoRLrFqTgSxXJ614d8AgQoWl7zPe/2VadE8+1dpU3LBhowRuBAcuwruWtOdD8oYC9jDNJjXDPyA=="
     },
+    "lie@3.1.1": {
+      "integrity": "sha512-RiNhHysUjhrDQntfYSfY4MU24coXXdEOgw9WGcKHNeEwffDYbF//u87M1EWaMGzuFoSbqW0C9C6lEEhDOAswfw==",
+      "dependencies": [
+        "immediate"
+      ]
+    },
     "load-json-file@5.3.0": {
       "integrity": "sha512-cJGP40Jc/VXUsp8/OrnyKyTZ1y6v/dphm3bioS+RrKXjK2BB6wHUd6JptZEFDGgGahMT+InnZO5i1Ei9mpC8Bw==",
       "dependencies": [
@@ -1003,6 +1090,12 @@
         "pify",
         "strip-bom",
         "type-fest"
+      ]
+    },
+    "localforage@1.10.0": {
+      "integrity": "sha512-14/H1aX7hzBBmmh7sGPd+AOMkkIrHM3Z1PAyGgZigA1H1p5O5ANnMyWzvpAETtG68/dC4pC0ncy3+PPGzXZHPg==",
+      "dependencies": [
+        "lie"
       ]
     },
     "locate-path@3.0.0": {
@@ -1216,11 +1309,17 @@
         "split2@4.2.0"
       ]
     },
+    "pino-abstract-transport@2.0.0": {
+      "integrity": "sha512-F63x5tizV6WCh4R6RHyi2Ml+M70DNRXt/+HANowMflpgGFMAym/VKm6G7ZOQRjqN7XbGxK1Lg9t6ZrtzOaivMw==",
+      "dependencies": [
+        "split2@4.2.0"
+      ]
+    },
     "pino-http@10.3.0": {
       "integrity": "sha512-kaHQqt1i5S9LXWmyuw6aPPqYW/TjoDPizPs4PnDW4hSpajz2Uo/oisNliLf7We1xzpiLacdntmw8yaZiEkppQQ==",
       "dependencies": [
         "get-caller-file",
-        "pino",
+        "pino@9.4.0",
         "pino-std-serializers",
         "process-warning"
       ]
@@ -1251,7 +1350,23 @@
         "atomic-sleep",
         "fast-redact",
         "on-exit-leak-free",
-        "pino-abstract-transport",
+        "pino-abstract-transport@1.2.0",
+        "pino-std-serializers",
+        "process-warning",
+        "quick-format-unescaped",
+        "real-require",
+        "safe-stable-stringify",
+        "sonic-boom",
+        "thread-stream"
+      ]
+    },
+    "pino@9.5.0": {
+      "integrity": "sha512-xSEmD4pLnV54t0NOUN16yCl7RIB1c5UUOse5HSyEXtBp+FgFQyPeDutc+Q2ZO7/22vImV7VfEjH/1zV2QuqvYw==",
+      "dependencies": [
+        "atomic-sleep",
+        "fast-redact",
+        "on-exit-leak-free",
+        "pino-abstract-transport@2.0.0",
         "pino-std-serializers",
         "process-warning",
         "quick-format-unescaped",
@@ -1282,7 +1397,7 @@
         "@octokit/webhooks",
         "@probot/get-private-key",
         "@probot/octokit-plugin-config",
-        "@probot/pino",
+        "@probot/pino@2.4.0",
         "@types/express",
         "bottleneck",
         "commander",
@@ -1293,7 +1408,7 @@
         "js-yaml",
         "lru-cache",
         "octokit-auth-probot",
-        "pino",
+        "pino@9.4.0",
         "pino-http",
         "pkg-conf",
         "update-dotenv"
@@ -1573,15 +1688,18 @@
   },
   "workspace": {
     "dependencies": [
-      "jsr:@std/assert@1",
+      "jsr:@std/assert@^1.0.6",
       "jsr:@std/dotenv@~0.225.2",
       "jsr:@std/http@1",
+      "jsr:@std/testing@^1.0.3",
       "jsr:@wei/pluralize@^8.0.1",
       "npm:@octokit/auth-app@^7.1.1",
+      "npm:@probot/pino@^2.5.0",
       "npm:bullmq@^5.20.0",
       "npm:express@^4.21.1",
       "npm:ioredis@^5.4.1",
       "npm:mongoose@^8.7.1",
+      "npm:pino@^9.5.0",
       "npm:probot@^13.3.8"
     ]
   }

@@ -1,6 +1,6 @@
 import type { Context, Probot } from "probot";
 import pluralize from "@wei/pluralize";
-import { appConfig } from "@src/utils/index.ts";
+import { appConfig } from "@src/utils/config.ts";
 import {
   deleteInstallation,
   setUpInstallation,

@@ -1,28 +1,8 @@
 import "@std/dotenv/load";
-import { createProbot, type Probot } from "probot";
-import { getProbotOctokit } from "@src/utils/index.ts";
+import log from "@src/utils/logger.ts";
 import { connectMongoDB, disconnectMongoDB } from "@src/db/index.ts";
-import { processInstallation } from "@src/processors/installation.ts";
-
-async function fullSync(app: Probot = createProbot()) {
-  const octokit = getProbotOctokit();
-
-  app.log.info("[Full Sync] Starting...");
-
-  const installationIds = await octokit.paginate(
-    octokit.apps.listInstallations,
-    { per_page: 100 },
-    (response) => response.data.map((installation) => installation.id),
-  );
-
-  for (const installationId of installationIds) {
-    await processInstallation({ app, installationId });
-  }
-
-  app.log.info("[Full Sync] Successful.");
-}
-
-export default fullSync;
+import { fullSync } from "@src/utils/full-sync.ts";
+import { createProbot } from "probot";
 
 async function main() {
   let exitCode = 0;
@@ -30,9 +10,10 @@ async function main() {
   try {
     await connectMongoDB();
 
-    await fullSync();
+    const probot = createProbot({ overrides: { log } });
+    await fullSync(probot);
   } catch (error) {
-    console.error("Error:", error);
+    log.error(error, "Error during full sync");
     exitCode = 1;
   } finally {
     await disconnectMongoDB();

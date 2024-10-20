@@ -1,7 +1,8 @@
 import "@std/dotenv/load";
 import { Worker } from "bullmq";
-import { QueueName } from "@src/queue/enums.ts";
+import { QueueName } from "@src/queue/index.ts";
 import { redisClient } from "@src/queue/index.ts";
+import logger from "@src/utils/logger.ts";
 import repoJobProcessor from "./repo-job-processor.ts";
 
 const worker = new Worker(
@@ -17,9 +18,15 @@ const worker = new Worker(
 );
 
 worker.on("completed", (job) => {
-  console.log(`${job.id} has completed!`);
+  logger.info(
+    { queue: QueueName.RepoJobQueue, jobId: job.id },
+    "Job has completed",
+  );
 });
 
 worker.on("failed", (job, err) => {
-  console.error(`${job?.id} has failed with ${err.message}`, err);
+  logger.error(
+    { queue: QueueName.RepoJobQueue, jobId: job?.id, error: err },
+    "Job has failed",
+  );
 });

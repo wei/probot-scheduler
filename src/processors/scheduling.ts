@@ -1,5 +1,6 @@
 import { Repository, type RepositorySchemaType } from "@src/db/index.ts";
 import { addJob, scheduleJob, unscheduleJob } from "@src/queue/index.ts";
+import logger from "@src/utils/logger.ts";
 
 export async function scheduleInstallation({
   installationId,
@@ -10,7 +11,7 @@ export async function scheduleInstallation({
   triggerImmediately?: boolean;
   repositoryRecords?: RepositorySchemaType[];
 }) {
-  console.log("Scheduling installation", installationId);
+  logger.info({ installationId }, "Scheduling installation");
 
   const repositories = repositoryRecords ??
     await Repository.find({
@@ -27,7 +28,7 @@ export async function unscheduleInstallation({
 }: {
   installationId: number;
 }) {
-  console.log("Unscheduling installation", installationId);
+  logger.info({ installationId }, "Unscheduling installation");
 
   const repositories = await Repository.find({
     installation_id: installationId,

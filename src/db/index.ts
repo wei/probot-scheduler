@@ -1,17 +1,18 @@
 import mongoose from "mongoose";
-import { appConfig } from "@src/utils/index.ts";
+import log from "@src/utils/logger.ts";
+import { appConfig } from "@src/utils/config.ts";
 
 export const connectMongoDB = async () => {
   await mongoose.connect(appConfig.mongoDBUrl!);
   if (mongoose.connection.readyState !== 1) {
     throw new Error("[MongoDB] Failed to connect");
   }
-  console.log("[MongoDB] Connected");
+  log.info("[MongoDB] Connected");
 };
 
 export const disconnectMongoDB = async () => {
   await mongoose.disconnect();
-  console.log("[MongoDB] Disconnected");
+  log.info("[MongoDB] Disconnected");
 };
 
 export * from "./models/Installation.ts";

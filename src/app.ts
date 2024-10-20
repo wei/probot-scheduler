@@ -2,7 +2,7 @@ import type { ApplicationFunctionOptions, Probot } from "probot";
 import handleInstallation from "@src/webhook/installation.ts";
 import handleInstallationRepositories from "@src/webhook/installation-repositories.ts";
 import handleInstallationTarget from "@src/webhook/installation-target.ts";
-import fullSync from "./scripts/full-sync.ts";
+import { fullSync } from "@src/utils/full-sync.ts";
 
 interface SchedulerAppOptions extends ApplicationFunctionOptions {
   skipFullSync?: boolean;
