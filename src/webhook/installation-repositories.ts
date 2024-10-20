@@ -22,7 +22,7 @@ async function handleInstallationRepositories(
     },
   } = context.payload;
 
-  const log = context.log.child({
+  const log = context.log = context.log.child({
     name: appConfig.name,
     event: context.name,
     action,
@@ -36,56 +36,52 @@ async function handleInstallationRepositories(
   switch (action) {
     case "added":
       log.info(
+        {
+          repositoryCount: added.length,
+          repositoryIds: added.map((repo) => repo.id),
+          repositoryNames: added.map((repo) => repo.full_name),
+        },
         `➕ ${account.type} ${account.login} added ${
-          pluralize(
-            "repository",
-            added.length,
-            true,
-          )
+          pluralize("repository", added.length, true)
         }`,
       );
 
       try {
-        await processAddInstallationRepositories({
-          app,
-          context,
-        });
+        await processAddInstallationRepositories({ context });
+        log.debug(
+          `✅ Successfully processed ${context.name}.${action} for ${account.login}`,
+        );
       } catch (err) {
         log.error(
           err,
           `❌ Failed to add or schedule some repositories, triggering full installation setup`,
         );
-        setUpInstallation({
-          app,
-          context,
-        });
+        await setUpInstallation({ app, context });
       }
       break;
     case "removed":
       log.info(
+        {
+          repositoryCount: removed.length,
+          repositoryIds: removed.map((repo) => repo.id),
+          repositoryNames: removed.map((repo) => repo.full_name),
+        },
         `➖ ${account.type} ${account.login} removed ${
-          pluralize(
-            "repository",
-            removed.length,
-            true,
-          )
+          pluralize("repository", removed.length, true)
         }`,
       );
 
       try {
-        await processRemoveInstallationRepositories({
-          app,
-          context,
-        });
+        await processRemoveInstallationRepositories({ context });
+        log.debug(
+          `✅ Successfully processed ${context.name}.${action} for ${account.login}`,
+        );
       } catch (err) {
         log.error(
           err,
           `❌ Failed to remove or unschedule some repositories, triggering full installation setup`,
         );
-        setUpInstallation({
-          app,
-          context,
-        });
+        await setUpInstallation({ app, context });
       }
       break;
     default:

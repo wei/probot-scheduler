@@ -7,7 +7,7 @@ import {
   suspendInstallation,
 } from "@src/processors/installation.ts";
 
-function handleInstallation(
+async function handleInstallation(
   app: Probot,
   context: Context<"installation">,
 ) {
@@ -21,7 +21,7 @@ function handleInstallation(
     },
   } = context.payload;
 
-  const log = context.log.child({
+  const log = context.log = context.log.child({
     name: appConfig.name,
     event: context.name,
     action,
@@ -35,48 +35,39 @@ function handleInstallation(
   switch (action) {
     case "created":
       log.info(
-        `🤗 ${account.type} ${account.login} installed on ${
-          pluralize(
-            "repository",
-            repositories?.length,
-            true,
-          )
+        {
+          repositoryCount: repositories?.length,
+          repositoryIds: repositories?.map((repo) => repo.id),
+          repositoryNames: repositories?.map((repo) => repo.full_name),
+        },
+        `🎉 ${account.type} ${account.login} installed on ${
+          pluralize("repository", repositories?.length, true)
         }`,
       );
-
-      setUpInstallation({
-        app,
-        context,
-      });
+      await setUpInstallation({ app, context });
       break;
     case "deleted":
       log.info(`😭 ${account.type} ${account.login} uninstalled`);
 
-      deleteInstallation({
+      await deleteInstallation({
         app,
         context,
       });
       break;
     case "new_permissions_accepted":
-      log.info(`👌 ${account.type} ${account.login} accepted new permissions`);
+      log.info(`🔐 ${account.type} ${account.login} accepted new permissions`);
 
-      setUpInstallation({
-        app,
-        context,
-      });
+      await setUpInstallation({ app, context });
       break;
     case "suspend":
       log.info(`🚫 ${account.type} ${account.login} suspended`);
 
-      suspendInstallation({
-        app,
-        context,
-      });
+      await suspendInstallation({ app, context });
       break;
     case "unsuspend":
       log.info(`👍 ${account.type} ${account.login} unsuspended`);
 
-      setUpInstallation({
+      await setUpInstallation({
         app,
         context,
       });

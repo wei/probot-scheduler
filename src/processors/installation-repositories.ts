@@ -1,10 +1,10 @@
-import type { Context, Probot } from "probot";
+import type { Context } from "probot";
 import { Repository } from "@src/db/index.ts";
 import { scheduleRepository, unscheduleRepository } from "./scheduling.ts";
 
 export async function processAddInstallationRepositories({
-  app,
   context: {
+    log: logger,
     octokit,
     payload: {
       installation: {
@@ -16,18 +16,22 @@ export async function processAddInstallationRepositories({
     },
   },
 }: {
-  app: Probot;
   context: Context<"installation_repositories">;
 }) {
   for (const { id, name, full_name } of repositories_added) {
+    const log = logger.child({
+      repositoryId: id,
+      repositoryFullName: full_name,
+    });
+
     try {
       if (suspended_at) {
-        app.log.info(
-          `ℹ️ Suspended installation. Skipping add repository ${installationId}:${id}:${full_name}`,
+        log.info(
+          `ℹ️⏭️ Skipping add repository for suspended installation`,
         );
         continue;
       }
-      app.log.info(`➕ Add repository ${installationId}:${id}:${full_name}`);
+      log.info(`➕ Adding repository`);
 
       // Get full repository details
       const { data: repo } = await octokit.repos.get({
@@ -43,9 +47,9 @@ export async function processAddInstallationRepositories({
       const savedRepo = await newRepo.save();
       await scheduleRepository(savedRepo, { triggerImmediately: true });
     } catch (err) {
-      app.log.error(
+      log.error(
         err,
-        `❌ Failed to save or schedule repository ${installationId}:${id}:${full_name}`,
+        `❌ Failed to save or schedule repository`,
       );
       throw err;
     }
@@ -53,8 +57,8 @@ export async function processAddInstallationRepositories({
 }
 
 export async function processRemoveInstallationRepositories({
-  app,
   context: {
+    log: logger,
     payload: {
       installation: {
         id: installationId,
@@ -63,14 +67,16 @@ export async function processRemoveInstallationRepositories({
     },
   },
 }: {
-  app: Probot;
   context: Context<"installation_repositories">;
 }) {
   for (const repo of repositories_removed) {
+    const log = logger.child({
+      repositoryId: repo.id,
+      repositoryFullName: repo.full_name,
+    });
+
     try {
-      app.log.info(
-        `➖ Remove repository ${installationId}:${repo.id}:${repo.full_name}`,
-      );
+      log.info(`➖ Removing repository`);
 
       const deletedRepo = await Repository.findOneAndDelete({
         id: repo.id,
@@ -81,9 +87,9 @@ export async function processRemoveInstallationRepositories({
         await unscheduleRepository(deletedRepo);
       }
     } catch (err) {
-      app.log.error(
+      log.error(
         err,
-        `❌ Failed to delete or unschedule repository ${installationId}:${repo.id}:${repo.full_name}`,
+        `❌ Failed to delete or unschedule repository`,
       );
       throw err;
     }

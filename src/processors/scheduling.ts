@@ -11,7 +11,12 @@ export async function scheduleInstallation({
   triggerImmediately?: boolean;
   repositoryRecords?: RepositorySchemaType[];
 }) {
-  logger.info({ installationId }, "Scheduling installation");
+  logger.debug(
+    {
+      installationId,
+    },
+    "📅 Scheduling installation",
+  );
 
   const repositories = repositoryRecords ??
     await Repository.find({
@@ -28,7 +33,12 @@ export async function unscheduleInstallation({
 }: {
   installationId: number;
 }) {
-  logger.info({ installationId }, "Unscheduling installation");
+  logger.debug(
+    {
+      installationId,
+    },
+    "🗑️ Unscheduling installation",
+  );
 
   const repositories = await Repository.find({
     installation_id: installationId,
@@ -49,6 +59,15 @@ export async function scheduleRepository(repository: RepositorySchemaType, {
     installation_id,
     full_name,
   } = repository;
+
+  logger.debug(
+    {
+      installationId: installation_id,
+      repositoryId: repository_id,
+      repositoryFullName: full_name,
+    },
+    "📅 Scheduling repository",
+  );
 
   await scheduleJob(
     {
@@ -78,6 +97,15 @@ export async function unscheduleRepository(repository: RepositorySchemaType) {
     installation_id,
     full_name,
   } = repository;
+
+  logger.debug(
+    {
+      installationId: installation_id,
+      repositoryId: repository_id,
+      repositoryFullName: full_name,
+    },
+    "🗑️ Unscheduling repository",
+  );
 
   await unscheduleJob({
     installation_id,

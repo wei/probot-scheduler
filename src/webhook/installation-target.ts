@@ -2,7 +2,7 @@ import type { Context, Probot } from "probot";
 import { appConfig } from "@src/utils/config.ts";
 import { setUpInstallation } from "@src/processors/installation.ts";
 
-function handleInstallationTarget(
+async function handleInstallationTarget(
   app: Probot,
   context: Context<"installation_target">,
 ) {
@@ -13,7 +13,7 @@ function handleInstallationTarget(
     changes: { login: oldLogin },
   } = context.payload;
 
-  const log = context.log.child({
+  const log = context.log = context.log.child({
     name: appConfig.name,
     event: context.name,
     action,
@@ -29,7 +29,7 @@ function handleInstallationTarget(
         `♻️ ${account.type} ${account.login} renamed from ${oldLogin}`,
       );
 
-      setUpInstallation({
+      await setUpInstallation({
         app,
         context,
       });

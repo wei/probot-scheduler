@@ -5,7 +5,7 @@ import { processInstallation } from "@src/processors/installation.ts";
 export async function fullSync(app: Probot) {
   const octokit = getProbotOctokit();
 
-  app.log.info("[Full Sync] Starting...");
+  app.log.info("🔄 Starting full sync");
 
   const installationIds = await octokit.paginate(
     octokit.apps.listInstallations,
@@ -17,5 +17,5 @@ export async function fullSync(app: Probot) {
     await processInstallation({ app, installationId });
   }
 
-  app.log.info("[Full Sync] Successful.");
+  app.log.info("✅ Full sync completed successfully");
 }

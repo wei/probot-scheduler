@@ -20,13 +20,13 @@ const worker = new Worker(
 worker.on("completed", (job) => {
   logger.info(
     { queue: QueueName.RepoJobQueue, jobId: job.id },
-    "Job has completed",
+    "✅ Job completed successfully",
   );
 });
 
 worker.on("failed", (job, err) => {
   logger.error(
     { queue: QueueName.RepoJobQueue, jobId: job?.id, error: err },
-    "Job has failed",
+    "❌ Job failed",
   );
 });

@@ -1,5 +1,6 @@
-import type { Context, Probot } from "probot";
+import type { Context, Logger, Probot } from "probot";
 import type { AnyBulkWriteOperation } from "mongoose";
+import { appConfig } from "@src/utils/config.ts";
 import {
   Installation,
   Repository,
@@ -10,6 +11,7 @@ import { scheduleInstallation, unscheduleInstallation } from "./scheduling.ts";
 export function setUpInstallation({
   app,
   context: {
+    log,
     payload: {
       action,
       installation: {
@@ -26,6 +28,7 @@ export function setUpInstallation({
     installationId,
     triggerImmediately: ["created", "unsuspend", "new_permissions_accepted"]
       .includes(action),
+    log,
   });
 }
 
@@ -33,55 +36,61 @@ export async function processInstallation({
   app,
   installationId,
   triggerImmediately = false,
+  log,
 }: {
   app: Probot;
   installationId: number;
   triggerImmediately?: boolean;
+  log?: Logger;
 }) {
+  log = (log ?? app.log).child({
+    name: appConfig.name,
+    installationId,
+  });
+
   const octokit = await app.auth(installationId);
 
   const installation = (await octokit.apps.getInstallation({
     installation_id: installationId,
   })).data as unknown as Context<"installation">["payload"]["installation"];
 
-  /**
-   * Update installation
-   */
+  log = log!.child({
+    account: installation.account.id,
+    accountType: installation.account.type,
+    accountName: installation.account.login,
+    installationId,
+    selection: installation.repository_selection,
+  });
+
   await Installation.findOneAndUpdate(
     { id: installationId },
     installation,
     { new: true, upsert: true },
   ).lean();
 
+  log.info(`🗑️ Unschedule installation before processing`);
   await unscheduleInstallation({ installationId });
 
-  if (
-    installation.suspended_at
-  ) {
-    app.log.info(
-      `ℹ️ Skipping reset for suspended installation ${installationId}`,
-    );
+  if (installation.suspended_at) {
+    log.info(`⏭️ Skip processing for suspended installation`);
     return;
   }
 
-  /**
-   * Update repositories
-   */
+  log.info(`🏃 Processing installation`);
+
   try {
     const installedRepositories = await octokit.paginate(
       octokit.apps.listReposAccessibleToInstallation,
       { per_page: 100 },
     ) as unknown as RepositorySchemaType[]; // TODO: Type fixed in https://github.com/octokit/plugin-paginate-rest.js/issues/350 upgrade probot to pick it up
 
-    const existingRepositoriesIds = await Repository.find(
-      { installation_id: installationId },
-      { id: 1, _id: 0 },
-    ).lean();
-
     const repositoriesToAdd: RepositorySchemaType[] = [];
     const repositoriesToUpdate: RepositorySchemaType[] = [];
     const existingRepositoriesIdSet: Set<number> = new Set(
-      existingRepositoriesIds.map((r) => r.id),
+      (await Repository.find(
+        { installation_id: installationId },
+        { id: 1, _id: 0 },
+      ).lean()).map((r) => r.id),
     );
 
     // Determine repositories to add, update, and remove
@@ -145,17 +154,19 @@ export async function processInstallation({
 
     if (bulkOps.length > 0) {
       await Repository.bulkWrite(bulkOps);
+      log.debug(`💾 Updated repositories in MongoDB in bulk`);
     }
 
+    log.info(`📅 Schedule installation ${installationId}`);
     await scheduleInstallation({ installationId, triggerImmediately });
 
     return { installation, repositories: installedRepositories };
   } catch (err) {
-    app.log.error(
+    log.error(
       err,
-      `❌ Failed to retrieve repositories for ${installationId}`,
+      `❌ Failed to retrieve repositories for installation ${installationId}`,
     );
-    throw new Error(`Failed to retrieve repositories for ${installationId}`);
+    throw new Error(`Failed to retrieve repositories`);
   }
 }
 
@@ -168,7 +179,7 @@ export async function deleteInstallation({
 }) {
   const { installation } = payload;
 
-  log.info(`ℹ️ Deleting installation ${installation.account.login}`);
+  log.info(`🗑️ Deleting installation ${installation.account.login}`);
 
   await unscheduleInstallation({ installationId: installation.id });
 
@@ -185,7 +196,7 @@ export async function suspendInstallation({
 }) {
   const { installation } = payload;
 
-  log.info(`ℹ️ Suspending installation ${installation.account.login}`);
+  log.info(`⛔ Suspending installation ${installation.account.login}`);
 
   await unscheduleInstallation({ installationId: installation.id });
 
@@ -201,20 +212,30 @@ export async function suspendInstallation({
 export async function getInstallation({
   app,
   installationId,
+  log,
 }: {
   app: Probot;
   installationId: number;
+  log?: Logger;
 }) {
+  log = log ?? app.log;
+
+  log.info(`📥 Getting installation ${installationId}`);
+
   const installation = await Installation.findOne({ id: installationId })
     .lean();
   if (!installation) {
-    app.log.warn(`Installation not found: ${installationId}`);
-    throw new Error(`Installation not found: ${installationId}`);
+    log.warn(`🔍 Installation not found`);
+    throw new Error(`Installation not found`);
   }
 
   const repositories = await Repository.find({
     installation_id: installationId,
   }).lean();
+
+  log.info(
+    `📦 Found ${repositories.length} repositories for installation ${installationId}`,
+  );
 
   return { installation, repositories };
 }

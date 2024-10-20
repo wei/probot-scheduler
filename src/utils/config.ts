@@ -1,7 +1,7 @@
 import process from "node:process";
 import { readEnvOptions } from "probot/lib/bin/read-env-options.js";
 
-export function getAppConfig(env: NodeJS.ProcessEnv = process.env) {
+function getAppConfig(env: NodeJS.ProcessEnv = process.env) {
   return {
     ...readEnvOptions(env),
     name: env.APP_NAME || "probot-scheduler",
