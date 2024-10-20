@@ -1,5 +1,5 @@
 import type { Context, Probot } from "probot";
-import pluralize from "pluralize";
+import pluralize from "@wei/pluralize";
 import { appConfig } from "@src/utils/index.ts";
 import {
   processAddInstallationRepositories,

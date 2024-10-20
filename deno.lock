@@ -12,12 +12,12 @@
     "jsr:@std/net@^1.0.4": "1.0.4",
     "jsr:@std/path@^1.0.6": "1.0.6",
     "jsr:@std/streams@^1.0.7": "1.0.7",
+    "jsr:@wei/pluralize@^8.0.1": "8.0.1",
     "npm:@octokit/auth-app@^7.1.1": "7.1.1",
     "npm:bullmq@^5.20.0": "5.20.0",
     "npm:express@^4.21.1": "4.21.1",
     "npm:ioredis@^5.4.1": "5.4.1",
     "npm:mongoose@^8.7.1": "8.7.1",
-    "npm:pluralize@8": "8.0.0",
     "npm:probot@^13.3.8": "13.3.8_@octokit+core@5.2.0_dotenv@16.4.5"
   },
   "jsr": {
@@ -65,6 +65,9 @@
     },
     "@std/streams@1.0.7": {
       "integrity": "1a93917ca0c58c01b2bfb93647189229b1702677f169b6fb61ad6241cd2e499b"
+    },
+    "@wei/pluralize@8.0.1": {
+      "integrity": "be5e3d45d99d94a31e2b9b65cbd0bac638d0061885c51859b8c5582a3d00fe8b"
     }
   },
   "npm": {
@@ -1265,9 +1268,6 @@
         "load-json-file"
       ]
     },
-    "pluralize@8.0.0": {
-      "integrity": "sha512-Nc3IT5yHzflTfbjgqWcCPpo7DaKy4FnpB0l/zCAW0Tc7jxAiuqSxHasntB3D7887LSrA93kDJ9IXovxJYxyLCA=="
-    },
     "probot@13.3.8_@octokit+core@5.2.0_dotenv@16.4.5": {
       "integrity": "sha512-xc+KBC0mp1JKFMsPbMyj1SpmN0B7Q8uFO7ze4PBbNv74q8AyPGqYL3TmkZSOmcOjFTeFrZTnMYEoXi+z1anyLA==",
       "dependencies": [
@@ -1576,12 +1576,12 @@
       "jsr:@std/assert@1",
       "jsr:@std/dotenv@~0.225.2",
       "jsr:@std/http@1",
+      "jsr:@wei/pluralize@^8.0.1",
       "npm:@octokit/auth-app@^7.1.1",
       "npm:bullmq@^5.20.0",
       "npm:express@^4.21.1",
       "npm:ioredis@^5.4.1",
       "npm:mongoose@^8.7.1",
-      "npm:pluralize@8",
       "npm:probot@^13.3.8"
     ]
   }
