@@ -1,6 +1,6 @@
 import "@std/dotenv/load";
 import log from "@src/utils/logger.ts";
-import { connectMongoDB, disconnectMongoDB } from "@src/db/index.ts";
+import { connectMongoDB, disconnectMongoDB } from "../src/config/database.ts";
 import { fullSync } from "@src/utils/full-sync.ts";
 import { createProbot } from "probot";
 

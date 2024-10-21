@@ -1,6 +1,6 @@
 import type { Job } from "bullmq";
-import type { RepoJobData } from "@src/queue/index.ts";
 import logger from "@src/utils/logger.ts";
+import type { RepoJobData } from "@src/utils/types.ts";
 
 export default async function RepoJobProcessor(job: Job<RepoJobData>) {
   const log = logger.child({

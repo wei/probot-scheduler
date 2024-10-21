@@ -1,13 +1,13 @@
 import { model, Schema } from "mongoose";
 import type { Context } from "probot";
 
-export type RepositorySchemaType =
+export type RepositoryModelSchemaType =
   & Context<"repository">["payload"]["repository"]
   & {
     installation_id: number;
   };
 
-const RepositorySchema = new Schema<RepositorySchemaType>({
+const RepositorySchema = new Schema<RepositoryModelSchemaType>({
   id: {
     type: Number,
     required: true,
@@ -89,11 +89,13 @@ const RepositorySchema = new Schema<RepositorySchemaType>({
     required: true,
     index: true,
   },
+}, {
+  timestamps: true,
 });
 
 RepositorySchema.index({ id: 1, installation_id: 1 }, { unique: true });
 
-export const Repository = model<RepositorySchemaType>(
+export const RepositoryModel = model<RepositoryModelSchemaType>(
   "probot-scheduler.repository",
   RepositorySchema,
 );

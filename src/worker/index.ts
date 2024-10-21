@@ -1,13 +1,18 @@
 import "@std/dotenv/load";
+import { Redis } from "ioredis";
 import { Worker } from "bullmq";
-import { QueueName } from "@src/queue/index.ts";
-import { redisClient } from "@src/queue/index.ts";
+import { appConfig } from "@src/config/app-config.ts";
+import { QueueName } from "@src/utils/types.ts";
 import logger from "@src/utils/logger.ts";
-import repoJobProcessor from "./repo-job-processor.ts";
+import repoJobProcessor from "./processor.ts";
+
+const redisClient = new Redis(appConfig.redisConfig!, {
+  maxRetriesPerRequest: null,
+});
 
 const worker = new Worker(
   QueueName.RepoJobQueue,
-  // `${import.meta.dirname}/repo-job-worker.ts`,
+  // `${import.meta.dirname}/processor.ts`,
   repoJobProcessor,
   {
     connection: redisClient,

@@ -1,5 +1,5 @@
-import { appConfig } from "./config.ts";
-import pino from "pino";
+import { appConfig } from "@src/config/app-config.ts";
+import { pino } from "pino";
 import { getTransformStream } from "@probot/pino";
 
 const transform = getTransformStream({

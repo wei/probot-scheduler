@@ -3,9 +3,9 @@ import express from "express";
 import { createNodeMiddleware, createProbot } from "probot";
 import process from "node:process";
 import createSchedulerApp from "@src/app.ts";
-import { appConfig } from "@src/utils/config.ts";
+import { appConfig } from "@src/config/app-config.ts";
 import log from "@src/utils/logger.ts";
-import { connectMongoDB, disconnectMongoDB } from "@src/db/index.ts";
+import { connectMongoDB, disconnectMongoDB } from "@src/config/database.ts";
 import createRouter from "./router/index.ts";
 
 const args = Deno.args;
@@ -31,7 +31,6 @@ server.listen(appConfig.port, () => {
   log.info(`[Express] Server is running on port ${appConfig.port}`);
 });
 
-// Function to handle app termination
 const handleAppTermination = async (signal: string) => {
   log.info(`[${signal}] Signal received: closing MongoDB connection`);
   await disconnectMongoDB();
@@ -39,6 +38,5 @@ const handleAppTermination = async (signal: string) => {
   process.exit(0);
 };
 
-// Handle app termination signals
 process.on("SIGINT", () => handleAppTermination("SIGINT"));
 process.on("SIGTERM", () => handleAppTermination("SIGTERM"));
