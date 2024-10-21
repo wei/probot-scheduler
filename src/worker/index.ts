@@ -1,7 +1,7 @@
 import "@std/dotenv/load";
 import { Redis } from "ioredis";
 import { Worker } from "bullmq";
-import { appConfig } from "@src/config/app-config.ts";
+import { appConfig } from "@src/configs/app-config.ts";
 import { QueueName } from "@src/utils/types.ts";
 import logger from "@src/utils/logger.ts";
 import repoJobProcessor from "./processor.ts";

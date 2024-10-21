@@ -1,14 +1,14 @@
-import type { Context, Probot } from "probot";
-import type { InstallationDataService } from "@src/data-services/installation-data-service.ts";
-import type { RepositoryJobSchedulingService } from "@src/queue/scheduling-service.ts";
-import type { RepositoryModelSchemaType } from "@src/models/repository-model.ts";
 import pluralize from "@wei/pluralize";
+import type { Context, Probot } from "probot";
+import type { RepositoryModelSchemaType } from "@src/models/repository-model.ts";
+import type { DataService } from "./data-service.ts";
+import type { JobSchedulingService } from "./scheduling-service.ts";
 
 export class InstallationRepositoryService {
   constructor(
     private app: Probot,
-    private installationDataService: InstallationDataService,
-    private repositoryJobSchedulingService: RepositoryJobSchedulingService,
+    private dataService: DataService,
+    private jobSchedulingService: JobSchedulingService,
   ) {}
 
   async handleInstallationRepositoriesEvent(
@@ -134,8 +134,8 @@ export class InstallationRepositoryService {
           installation_id: installationId,
         } as RepositoryModelSchemaType;
 
-        await this.installationDataService.addRepository(installationId, repo);
-        await this.repositoryJobSchedulingService.scheduleRepository(repo, {
+        await this.dataService.addRepository(installationId, repo);
+        await this.jobSchedulingService.scheduleRepository(repo, {
           triggerImmediately: true,
         });
       } catch (err) {
@@ -167,13 +167,13 @@ export class InstallationRepositoryService {
       try {
         log.info(`➖ Removing repository`);
 
-        const deletedRepo = await this.installationDataService.deleteRepository(
+        const deletedRepo = await this.dataService.deleteRepository(
           installationId,
           repo.id,
         );
 
         if (deletedRepo) {
-          await this.repositoryJobSchedulingService.unscheduleRepository(
+          await this.jobSchedulingService.unscheduleRepository(
             deletedRepo,
           );
         }

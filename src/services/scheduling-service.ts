@@ -1,10 +1,10 @@
 import { Queue } from "bullmq";
 import type { Redis } from "ioredis";
+import type { Logger } from "pino";
 import { JobPriority, QueueName, type RepoJobData } from "@src/utils/types.ts";
 import type { RepositoryModelSchemaType } from "@src/models/repository-model.ts";
-import type { Logger } from "pino";
 
-export class RepositoryJobSchedulingService {
+export class JobSchedulingService {
   private repoJobQueue: Queue;
   private log: Logger;
 
@@ -13,7 +13,7 @@ export class RepositoryJobSchedulingService {
       connection: redisClient,
     });
     this.log = logger.child({
-      service: "RepositoryJobSchedulingService",
+      service: "JobSchedulingService",
     });
   }
 

@@ -1,4 +1,4 @@
-import { appConfig } from "@src/config/app-config.ts";
+import { appConfig } from "@src/configs/app-config.ts";
 import { pino } from "pino";
 import { getTransformStream } from "@probot/pino";
 

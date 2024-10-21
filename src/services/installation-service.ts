@@ -1,15 +1,15 @@
-import type { InstallationDataService } from "@src/data-services/installation-data-service.ts";
+import type { DataService } from "./data-service.ts";
 import type { Context, Probot } from "probot";
 import type { InstallationModelSchemaType } from "@src/models/installation-model.ts";
 import type { RepositoryModelSchemaType } from "@src/models/repository-model.ts";
-import type { RepositoryJobSchedulingService } from "@src/queue/scheduling-service.ts";
+import type { JobSchedulingService } from "./scheduling-service.ts";
 import pluralize from "@wei/pluralize";
 
 export class InstallationService {
   constructor(
     private app: Probot,
-    private installationDataService: InstallationDataService,
-    private repositoryJobSchedulingService: RepositoryJobSchedulingService,
+    private dataService: DataService,
+    private jobSchedulingService: JobSchedulingService,
   ) {}
 
   async handleInstallationEvent(context: Context<"installation">) {
@@ -137,14 +137,14 @@ export class InstallationService {
         installation_id: installationId,
       })).data;
 
-      await this.installationDataService.saveInstallation(
+      await this.dataService.saveInstallation(
         installation as InstallationModelSchemaType,
       );
 
       log.info(`🗑️ Unschedule installation before processing`);
       const { repositories: existingRepositories } = await this
-        .installationDataService.getInstallation(installationId);
-      await this.repositoryJobSchedulingService.unscheduleRepositories(
+        .dataService.getInstallation(installationId);
+      await this.jobSchedulingService.unscheduleRepositories(
         existingRepositories,
       );
 
@@ -158,17 +158,17 @@ export class InstallationService {
         { per_page: 100 },
       ) as unknown as RepositoryModelSchemaType[]; // TODO: Type fixed in https://github.com/octokit/plugin-paginate-rest.js/issues/350 upgrade probot to pick it up
 
-      await this.installationDataService.updateRepositories(
+      await this.dataService.updateRepositories(
         installationId,
         installedRepositories,
       );
 
       log.info(`Schedule installation ${installationId}`);
-      const { repositories } = await this.installationDataService
+      const { repositories } = await this.dataService
         .getInstallation(
           installationId,
         );
-      await this.repositoryJobSchedulingService.scheduleRepositories(
+      await this.jobSchedulingService.scheduleRepositories(
         repositories,
         { triggerImmediately },
       );
@@ -187,13 +187,13 @@ export class InstallationService {
     });
 
     log.info(`🗑️ Unschedule installation before deleting`);
-    const { repositories } = await this.installationDataService.getInstallation(
+    const { repositories } = await this.dataService.getInstallation(
       installationId,
     );
-    await this.repositoryJobSchedulingService.unscheduleRepositories(
+    await this.jobSchedulingService.unscheduleRepositories(
       repositories,
     );
-    await this.installationDataService.deleteInstallation(installationId);
+    await this.dataService.deleteInstallation(installationId);
   }
 
   async suspendInstallation(installationId: number) {
@@ -203,13 +203,13 @@ export class InstallationService {
     });
 
     log.info(`🗑️ Unschedule installation before suspending`);
-    const { repositories, installation } = await this.installationDataService
+    const { repositories, installation } = await this.dataService
       .getInstallation(installationId);
-    await this.repositoryJobSchedulingService.unscheduleRepositories(
+    await this.jobSchedulingService.unscheduleRepositories(
       repositories,
     );
-    await this.installationDataService.saveInstallation(installation);
-    await this.installationDataService.deleteInstallation(installationId);
+    await this.dataService.saveInstallation(installation);
+    await this.dataService.deleteInstallation(installationId);
   }
 
   // Helpers methods
@@ -221,7 +221,7 @@ export class InstallationService {
 
     log.info(`🏃 Processing installation by login`);
 
-    const installation = await this.installationDataService
+    const installation = await this.dataService
       .getInstallationByLogin(installationLogin);
 
     if (!installation) {
@@ -242,7 +242,7 @@ export class InstallationService {
 
     log.info(`🔍 Getting installation by login`);
 
-    const installation = await this.installationDataService
+    const installation = await this.dataService
       .getInstallationByLogin(installationLogin);
 
     if (!installation) {

@@ -1,5 +1,5 @@
 import type { Probot } from "probot";
-import { createInstallationService } from "@src/factories/service-factory.ts";
+import { createInstallationService } from "@src/services/service-factory.ts";
 
 export const getInstallationHandler = async (
   app: Probot,

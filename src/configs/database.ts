@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
+import { appConfig } from "@src/configs/app-config.ts";
 import log from "@src/utils/logger.ts";
-import { appConfig } from "@src/config/app-config.ts";
 
 export const connectMongoDB = async () => {
   await mongoose.connect(appConfig.mongoDBUrl!);

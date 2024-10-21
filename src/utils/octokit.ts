@@ -1,6 +1,6 @@
 import { ProbotOctokit } from "probot";
 import { createAppAuth } from "@octokit/auth-app";
-import { appConfig } from "@src/config/app-config.ts";
+import { appConfig } from "@src/configs/app-config.ts";
 
 export function getProbotOctokit() {
   const { appId, privateKey, baseUrl } = appConfig;

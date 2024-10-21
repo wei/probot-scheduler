@@ -2,7 +2,7 @@ import type { Context, Probot } from "probot";
 import {
   createInstallationRepositoryService,
   createInstallationService,
-} from "@src/factories/service-factory.ts";
+} from "@src/services/service-factory.ts";
 
 export const installationWebhookEventHandler = async (
   app: Probot,

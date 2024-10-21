@@ -10,7 +10,7 @@ import pluralize from "@wei/pluralize";
 import type { AnyBulkWriteOperation } from "mongoose";
 import type { Logger } from "pino";
 
-export class InstallationDataService {
+export class DataService {
   private log?: Logger;
 
   constructor(private logger?: Logger) {

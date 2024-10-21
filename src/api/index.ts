@@ -3,9 +3,9 @@ import express from "express";
 import { createNodeMiddleware, createProbot } from "probot";
 import process from "node:process";
 import createSchedulerApp from "@src/app.ts";
-import { appConfig } from "@src/config/app-config.ts";
+import { appConfig } from "@src/configs/app-config.ts";
 import log from "@src/utils/logger.ts";
-import { connectMongoDB, disconnectMongoDB } from "@src/config/database.ts";
+import { connectMongoDB, disconnectMongoDB } from "@src/configs/database.ts";
 import createRouter from "./router/index.ts";
 
 const args = Deno.args;
