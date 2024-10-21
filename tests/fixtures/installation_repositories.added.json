@@ -1,0 +1,20 @@
+{
+  "action": "added",
+  "installation": {
+    "id": 12345,
+    "account": {
+      "login": "octocat",
+      "id": 1,
+      "type": "User"
+    },
+    "repository_selection": "selected"
+  },
+  "repositories_added": [
+    {
+      "id": 1296269,
+      "name": "Hello-World",
+      "full_name": "octocat/Hello-World"
+    }
+  ],
+  "repositories_removed": []
+}

@@ -1,0 +1,13 @@
+{
+  "action": "unsuspend",
+  "installation": {
+    "id": 12345,
+    "account": {
+      "login": "octocat",
+      "id": 1,
+      "type": "User"
+    },
+    "repository_selection": "selected",
+    "suspended_at": null
+  }
+}
