@@ -1,3 +1,9 @@
+import type { ApplicationFunctionOptions } from "probot";
+
+export interface SchedulerAppOptions extends ApplicationFunctionOptions {
+  skipFullSync?: boolean;
+}
+
 export const QueueName = {
   RepoJobQueue: "RepoJobQueue",
 } as const;

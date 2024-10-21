@@ -1,14 +1,11 @@
-import type { ApplicationFunctionOptions, Probot } from "probot";
+import type { Probot } from "probot";
+import type { SchedulerAppOptions } from "@src/utils/types.ts";
 import { fullSync } from "@src/utils/full-sync.ts";
 import {
   installationRepositoriesWebhookEventHandler,
   installationTargetWebhookEventHandler,
   installationWebhookEventHandler,
 } from "./handlers/webhook-handlers.ts";
-
-interface SchedulerAppOptions extends ApplicationFunctionOptions {
-  skipFullSync?: boolean;
-}
 
 async function scheduler(app: Probot, opts: SchedulerAppOptions) {
   if (!opts.skipFullSync) {
