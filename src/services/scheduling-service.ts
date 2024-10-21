@@ -1,7 +1,11 @@
 import { Queue } from "bullmq";
 import type { Redis } from "ioredis";
 import type { Logger } from "pino";
-import { JobPriority, QueueName, type RepoJobData } from "@src/utils/types.ts";
+import {
+  JobPriority,
+  QueueName,
+  type SchedulerJobData,
+} from "@src/utils/types.ts";
 import type { RepositoryModelSchemaType } from "@src/models/repository-model.ts";
 
 export class JobSchedulingService {
@@ -19,7 +23,7 @@ export class JobSchedulingService {
 
   private getId(
     type: "job-scheduler" | "job" | "oneoff-job",
-    jobData: RepoJobData,
+    jobData: SchedulerJobData,
     suffix?: string,
   ) {
     return `[${type}_${jobData.installation_id}_${jobData.repository_id}${
@@ -27,7 +31,7 @@ export class JobSchedulingService {
     }]`;
   }
 
-  async scheduleJob(jobData: RepoJobData, options: {
+  async scheduleJob(jobData: SchedulerJobData, options: {
     cron: string;
     jobPriority?: JobPriority;
   }) {
@@ -54,7 +58,7 @@ export class JobSchedulingService {
     );
   }
 
-  async addJob(jobData: RepoJobData, jobPriority = JobPriority.High) {
+  async addJob(jobData: SchedulerJobData, jobPriority = JobPriority.High) {
     const jobId = this.getId("oneoff-job", jobData, Date.now().toString());
     this.log.debug({ jobData, jobPriority, jobId }, "Adding one-off job");
     return await this.repoJobQueue.add(
@@ -67,7 +71,7 @@ export class JobSchedulingService {
     );
   }
 
-  async unscheduleJob(jobData: RepoJobData) {
+  async unscheduleJob(jobData: SchedulerJobData) {
     this.log.debug({ jobData }, "Unscheduling job");
     await this.repoJobQueue.removeJobScheduler(
       this.getId("job-scheduler", jobData),

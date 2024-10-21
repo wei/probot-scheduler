@@ -18,7 +18,7 @@ export const JobPriority = {
 
 export type JobPriority = typeof JobPriority[keyof typeof JobPriority];
 
-export interface RepoJobData {
+export interface SchedulerJobData {
   installation_id: number;
   repository_id: number;
   full_name: string;

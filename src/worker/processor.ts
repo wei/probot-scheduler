@@ -1,8 +1,8 @@
 import type { Job } from "bullmq";
 import logger from "@src/utils/logger.ts";
-import type { RepoJobData } from "@src/utils/types.ts";
+import type { SchedulerJobData } from "@src/utils/types.ts";
 
-export default async function RepoJobProcessor(job: Job<RepoJobData>) {
+export default async function RepoJobProcessor(job: Job<SchedulerJobData>) {
   const log = logger.child({
     jobId: job.id,
     jobData: job.data,
