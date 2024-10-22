@@ -12,8 +12,8 @@ const createRouter = (app: Probot) => {
   router.use("/api/admin", createAdminRouter(app, installationService));
 
   // Status route
-  router.get("/status", (_req: Request, res: Response) => {
-    res.json({ status: "ok" });
+  router.get("/ping", (_req: Request, res: Response) => {
+    res.json({ status: "pong" });
   });
 
   return router;

@@ -1,5 +1,7 @@
 [![probot-scheduler][social-image]][social-image-url]
 
+---
+
 [![JSR][jsr-badge]][jsr-url] ![Deno][deno-badge] ![TypeScript][typescript-badge]
 [![CI][ci-badge]][ci-url] [![License: MIT][license-badge]][license-url]
 
@@ -16,6 +18,7 @@ processing.
 
 ## Dependencies
 
+- [BYO Probot GitHub App](https://probot.github.io/docs/development/)
 - [MongoDB](https://www.mongodb.com/)
 - [Redis](https://redis.io/)
 
@@ -33,12 +36,12 @@ npx jsr add @wei/probot-scheduler
 deno add jsr:@wei/probot-scheduler
 ```
 
-2. Configuration
+1. Configuration
 
 Make sure to set up the required environment variables in your `.env` file. See
 the `.env.example` file for a list of available options.
 
-3. Import and use the scheduler in your Probot app:
+1. Import and use the scheduler in your Probot app:
 
 ```typescript
 import { Probot } from "probot";
@@ -95,76 +98,9 @@ async function myJobProcessor(job: Job<SchedulerJobData>) {
 }
 ```
 
-## Development
+## Contributing
 
-### Installation
-
-1. Clone the repository:
-   ```
-   git clone https://github.com/wei/probot-scheduler.git
-   cd probot-scheduler
-   ```
-
-2. Set up your environment variables by copying the `.env.example` file to
-   `.env` and filling in the required values:
-   ```
-   cp .env.example .env
-   ```
-
-3. Set up your GitHub App and update the `.env` file with your app's
-   credentials. Follow the
-   [Probot documentation](https://probot.github.io/docs/development/) for
-   detailed instructions on creating a GitHub App.
-
-### Starting the server
-
-```
-deno task dev
-```
-
-This will start the server and begin listening for GitHub webhook events and
-scheduling jobs.
-
-#### API Endpoints
-
-- `POST /api/github/webhooks`: GitHub webhook endpoint
-- `GET /api/admin/installation/:installationIdOrLogin`: Get details about a
-  specific installation
-- `POST /api/admin/installation/:installationIdOrLogin`: Manually trigger a sync
-  for a specific installation
-
-### Starting the worker
-
-```
-deno task worker
-```
-
-This will start a sample worker process that handles scheduled jobs.
-
-### Running a full sync
-
-To manually trigger a full sync of all installations:
-
-```
-deno task full-sync
-```
-
-### Running Tests
-
-To run the tests:
-
-```
-deno task test
-```
-
-### Linting and Formatting
-
-To lint and format the code:
-
-```
-deno lint
-deno fmt
-```
+See [CONTRIBUTING.md](./CONTRIBUTING.md)
 
 ## License
 
