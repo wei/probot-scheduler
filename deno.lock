@@ -4,7 +4,6 @@
     "jsr:@std/assert@^1.0.6": "1.0.6",
     "jsr:@std/cli@^1.0.6": "1.0.6",
     "jsr:@std/data-structures@^1.0.4": "1.0.4",
-    "jsr:@std/dotenv@~0.225.2": "0.225.2",
     "jsr:@std/encoding@^1.0.5": "1.0.5",
     "jsr:@std/fmt@^1.0.2": "1.0.2",
     "jsr:@std/fs@^1.0.4": "1.0.4",
@@ -38,9 +37,6 @@
     },
     "@std/data-structures@1.0.4": {
       "integrity": "fa0e20c11eb9ba673417450915c750a0001405a784e2a4e0c3725031681684a0"
-    },
-    "@std/dotenv@0.225.2": {
-      "integrity": "e2025dce4de6c7bca21dece8baddd4262b09d5187217e231b033e088e0c4dd23"
     },
     "@std/encoding@1.0.5": {
       "integrity": "ecf363d4fc25bd85bd915ff6733a7e79b67e0e7806334af15f4645c569fefc04"
@@ -1689,7 +1685,6 @@
   "workspace": {
     "dependencies": [
       "jsr:@std/assert@^1.0.6",
-      "jsr:@std/dotenv@~0.225.2",
       "jsr:@std/http@1",
       "jsr:@std/testing@^1.0.3",
       "jsr:@wei/pluralize@^8.0.1",

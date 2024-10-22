@@ -1,4 +1,3 @@
-import "@std/dotenv/load";
 import log from "@src/utils/logger.ts";
 import { connectMongoDB, disconnectMongoDB } from "@src/configs/database.ts";
 import { fullSync } from "@src/utils/full-sync.ts";

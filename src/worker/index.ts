@@ -1,4 +1,3 @@
-import "@std/dotenv/load";
 import { Redis } from "ioredis";
 import { appConfig } from "@src/configs/app-config.ts";
 import { QueueName } from "@src/utils/types.ts";

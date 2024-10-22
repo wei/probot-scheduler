@@ -1,12 +1,10 @@
-import "@std/dotenv/load";
 import express from "express";
 import { createNodeMiddleware, createProbot } from "probot";
-import process from "node:process";
-import createSchedulerApp from "@src/app.ts";
-import { appConfig } from "@src/configs/app-config.ts";
-import log from "@src/utils/logger.ts";
 import { connectMongoDB, disconnectMongoDB } from "@src/configs/database.ts";
 import createRouter from "./router/index.ts";
+import log from "@src/utils/logger.ts";
+import { appConfig } from "@src/configs/app-config.ts";
+import createSchedulerApp from "@src/app.ts";
 
 const args = Deno.args;
 const skipFullSync = args.includes("--skip-full-sync");
@@ -35,8 +33,8 @@ const handleAppTermination = async (signal: string) => {
   log.info(`[${signal}] Signal received: closing MongoDB connection`);
   await disconnectMongoDB();
   log.info("[MongoDB] Connection closed due to app termination");
-  process.exit(0);
+  Deno.exit(0);
 };
 
-process.on("SIGINT", () => handleAppTermination("SIGINT"));
-process.on("SIGTERM", () => handleAppTermination("SIGTERM"));
+Deno.addSignalListener("SIGINT", () => handleAppTermination("SIGINT"));
+Deno.addSignalListener("SIGTERM", () => handleAppTermination("SIGTERM"));
