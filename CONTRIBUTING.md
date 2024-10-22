@@ -29,7 +29,7 @@ project you agree to abide by its terms.
 
 ### Development Environment
 
-This project uses a Dev Container to provide a consistent and isolated
+This project uses Dev Containers to provide a consistent and isolated
 development environment. It is defined in the `.devcontainer` folder and
 includes all necessary dependencies and services.
 
@@ -52,16 +52,24 @@ includes all necessary dependencies and services.
 1. Once the container is ready, you'll have a fully configured development
    environment with all necessary dependencies and services running.
 
-#### Dev Container Components
+#### Base Dev Environment
 
-| **Container**       | **Description**                   | **URL**                                            |
-| ------------------- | --------------------------------- | -------------------------------------------------- |
-| **dev**             | The main dev container with deno. | [`http://localhost:3000`](http://localhost:3000)   |
-| **mongodb**         | MongoDB database container.       | [`http://localhost:27017`](http://localhost:27017) |
-| **mongo-express**   | MongoDB web interface.            | [`http://localhost:8081`](http://localhost:8081)   |
-| **redis**           | Redis container.                  | [`http://localhost:6379`](http://localhost:6379)   |
-| **redis-commander** | Redis web interface.              | [`http://localhost:8082`](http://localhost:8082)   |
-| **bullboard**       | BullMQ web interface.             | [`http://localhost:8083`](http://localhost:8083)   |
+| **Container** | **Description**                   | **URL**                                            |
+| ------------- | --------------------------------- | -------------------------------------------------- |
+| **dev**       | The main dev container with deno. | [`http://localhost:3000`](http://localhost:3000)   |
+| **mongodb**   | MongoDB database container.       | [`http://localhost:27017`](http://localhost:27017) |
+| **redis**     | Redis container.                  | [`http://localhost:6379`](http://localhost:6379)   |
+
+#### Full Dev Environment (amd64)
+
+In addition to the containers above, the full dev environment includes the
+following:
+
+| **Container**       | **Description**        | **URL**                                          |
+| ------------------- | ---------------------- | ------------------------------------------------ |
+| **mongo-express**   | MongoDB web interface. | [`http://localhost:8081`](http://localhost:8081) |
+| **redis-commander** | Redis web interface.   | [`http://localhost:8082`](http://localhost:8082) |
+| **bullboard**       | BullMQ web interface.  | [`http://localhost:8083`](http://localhost:8083) |
 
 ### Starting the server
 
