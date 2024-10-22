@@ -2,13 +2,13 @@ import pluralize from "@wei/pluralize";
 import type { Context, Probot } from "probot";
 import type { RepositoryModelSchemaType } from "@src/models/repository-model.ts";
 import type { DataService } from "./data-service.ts";
-import type { JobSchedulingService } from "./scheduling-service.ts";
+import type { SchedulingService } from "./scheduling-service.ts";
 
 export class InstallationRepositoryService {
   constructor(
     private app: Probot,
     private dataService: DataService,
-    private jobSchedulingService: JobSchedulingService,
+    private jobSchedulingService: SchedulingService,
   ) {}
 
   async handleInstallationRepositoriesEvent(

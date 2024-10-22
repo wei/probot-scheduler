@@ -9,6 +9,7 @@ import {
 import pluralize from "@wei/pluralize";
 import type { AnyBulkWriteOperation } from "mongoose";
 import type { Logger } from "pino";
+import { removeUndefinedKeys } from "@src/utils/helpers.ts";
 
 export class DataService {
   private log?: Logger;
@@ -147,6 +148,22 @@ export class DataService {
     }
   }
 
+  async getRepository({
+    installationId,
+    repositoryId,
+    fullName,
+  }: {
+    installationId?: number;
+    repositoryId?: number;
+    fullName?: string;
+  }) {
+    return await RepositoryModel.findOne(removeUndefinedKeys({
+      id: repositoryId,
+      installation_id: installationId,
+      full_name: fullName,
+    })).lean();
+  }
+
   async addRepository(
     installationId: number,
     repository: RepositoryModelSchemaType,
@@ -154,12 +171,18 @@ export class DataService {
     this.log?.debug({
       installationId,
       repositoryId: repository.id,
-    }, `➕ Adding repository`);
+    }, `➕ Upserting repository`);
 
-    return await new RepositoryModel({
-      ...repository,
-      installation_id: installationId,
-    }).save();
+    await RepositoryModel.updateOne(
+      { id: repository.id, installation_id: installationId },
+      { $set: { ...repository, installation_id: installationId } },
+      { upsert: true },
+    );
+
+    return await this.getRepository({
+      installationId,
+      repositoryId: repository.id,
+    });
   }
 
   async deleteRepository(installationId: number, repositoryId: number) {

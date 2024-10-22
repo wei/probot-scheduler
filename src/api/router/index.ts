@@ -1,24 +1,17 @@
-import express from "express";
 import type { Request, Response } from "express";
 import type { Probot } from "probot";
-import adminInstallationRouteHandlers from "./admin-installation.ts";
+import express from "express";
+import { createInstallationService } from "@src/services/service-factory.ts";
+import createAdminRouter from "./admin/index.ts";
 
 const createRouter = (app: Probot) => {
   const router = express.Router();
+  const installationService = createInstallationService(app);
 
-  const {
-    get: getAdminInstallation,
-    post: postAdminInstallation,
-  } = adminInstallationRouteHandlers(app);
-  router.get(
-    "/api/admin/installation/:installationIdOrLogin",
-    getAdminInstallation,
-  );
-  router.post(
-    "/api/admin/installation/:installationIdOrLogin",
-    postAdminInstallation,
-  );
+  // Mount admin router
+  router.use("/api/admin", createAdminRouter(app, installationService));
 
+  // Status route
   router.get("/status", (_req: Request, res: Response) => {
     res.json({ status: "ok" });
   });

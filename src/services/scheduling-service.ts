@@ -8,7 +8,7 @@ import {
 } from "@src/utils/types.ts";
 import type { RepositoryModelSchemaType } from "@src/models/repository-model.ts";
 
-export class JobSchedulingService {
+export class SchedulingService {
   private repoJobQueue: Queue;
   private log: Logger;
 

@@ -9,11 +9,15 @@
       "console": "integratedTerminal",
       "cwd": "${workspaceFolder}",
       "env": {},
+      "envFile": "${workspaceFolder}/.env",
       "runtimeExecutable": "deno",
       "runtimeArgs": [
         "run",
         "--inspect-wait",
         "--allow-all"
+      ],
+      "args": [
+        "--skip-full-sync"
       ],
       "attachSimplePort": 9229
     }

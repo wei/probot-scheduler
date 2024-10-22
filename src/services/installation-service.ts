@@ -2,14 +2,14 @@ import type { DataService } from "./data-service.ts";
 import type { Context, Probot } from "probot";
 import type { InstallationModelSchemaType } from "@src/models/installation-model.ts";
 import type { RepositoryModelSchemaType } from "@src/models/repository-model.ts";
-import type { JobSchedulingService } from "./scheduling-service.ts";
+import type { SchedulingService } from "./scheduling-service.ts";
 import pluralize from "@wei/pluralize";
 
 export class InstallationService {
   constructor(
     private app: Probot,
     private dataService: DataService,
-    private jobSchedulingService: JobSchedulingService,
+    private jobSchedulingService: SchedulingService,
   ) {}
 
   async handleInstallationEvent(context: Context<"installation">) {
@@ -277,5 +277,40 @@ export class InstallationService {
     }, `✅ Got installation`);
 
     return { installation, repositories };
+  }
+
+  async getRepositoryByFullName(fullName: string) {
+    const log = this.app.log.child({
+      service: "InstallationService",
+      repositoryName: fullName,
+    });
+
+    log.info(`🔍 Getting repository by full name`);
+
+    return await this.dataService.getRepository({ fullName });
+  }
+
+  async processRepositoryByFullName(fullName: string) {
+    const log = this.app.log.child({
+      service: "InstallationService",
+      repositoryName: fullName,
+    });
+
+    log.info(`🏃 Processing repository`);
+
+    try {
+      const repository = await this.getRepositoryByFullName(fullName);
+      if (!repository) {
+        throw new Error(`Repository not found`);
+      }
+      await this.jobSchedulingService.scheduleRepository(repository, {
+        triggerImmediately: true,
+      });
+
+      return repository;
+    } catch (err) {
+      log.error(err, `❌ Failed to process repository by id`);
+      throw new Error(`Failed to process repository`);
+    }
   }
 }
