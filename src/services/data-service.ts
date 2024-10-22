@@ -1,15 +1,19 @@
 import {
   InstallationModel,
-  type InstallationModelSchemaType,
+  type InstallationSchemaType,
 } from "@src/models/installation-model.ts";
 import {
   RepositoryModel,
-  type RepositoryModelSchemaType,
+  type RepositorySchemaType,
 } from "@src/models/repository-model.ts";
 import pluralize from "@wei/pluralize";
 import type { AnyBulkWriteOperation } from "mongoose";
 import type { Logger } from "pino";
 import { removeUndefinedKeys } from "@src/utils/helpers.ts";
+import {
+  RepositoryMetadataModel,
+  type RepositoryMetadataSchemaType,
+} from "@src/models/repository-metadata-model.ts";
 
 export class DataService {
   private log?: Logger;
@@ -20,7 +24,7 @@ export class DataService {
     });
   }
 
-  async saveInstallation(data: InstallationModelSchemaType) {
+  async saveInstallation(data: InstallationSchemaType) {
     this.log?.debug({
       installationId: data.id,
     }, `💾 Saving installation`);
@@ -65,7 +69,7 @@ export class DataService {
 
   async updateRepositories(
     installationId: number,
-    installedRepositories: RepositoryModelSchemaType[],
+    installedRepositories: RepositorySchemaType[],
   ) {
     this.log?.debug({
       installationId,
@@ -77,11 +81,11 @@ export class DataService {
       (await RepositoryModel.find(
         { installation_id: installationId },
         { id: 1, _id: 0 },
-      ).lean()).map((r: RepositoryModelSchemaType) => r.id),
+      ).lean()).map((r: RepositorySchemaType) => r.id),
     );
 
-    const repositoriesToAdd: RepositoryModelSchemaType[] = [];
-    const repositoriesToUpdate: RepositoryModelSchemaType[] = [];
+    const repositoriesToAdd: RepositorySchemaType[] = [];
+    const repositoriesToUpdate: RepositorySchemaType[] = [];
 
     // Determine repositories to add, update, and remove
     for (const repo of installedRepositories) {
@@ -96,7 +100,7 @@ export class DataService {
     const repositoryIdsToRemove = [...existingRepositoriesIdSet];
 
     // Update MongoDB
-    const bulkOps: AnyBulkWriteOperation<RepositoryModelSchemaType>[] = [];
+    const bulkOps: AnyBulkWriteOperation<RepositorySchemaType>[] = [];
 
     // Add repositories
     for (const repo of repositoriesToAdd) {
@@ -166,23 +170,18 @@ export class DataService {
 
   async addRepository(
     installationId: number,
-    repository: RepositoryModelSchemaType,
+    repository: RepositorySchemaType,
   ) {
     this.log?.debug({
       installationId,
       repositoryId: repository.id,
     }, `➕ Upserting repository`);
 
-    await RepositoryModel.updateOne(
+    return await RepositoryModel.findOneAndUpdate(
       { id: repository.id, installation_id: installationId },
-      { $set: { ...repository, installation_id: installationId } },
-      { upsert: true },
+      { ...repository, installation_id: installationId },
+      { new: true, upsert: true },
     );
-
-    return await this.getRepository({
-      installationId,
-      repositoryId: repository.id,
-    });
   }
 
   async deleteRepository(installationId: number, repositoryId: number) {
@@ -204,5 +203,23 @@ export class DataService {
       id: 1,
       _id: 0,
     }).lean();
+  }
+
+  async getRepositoryMetadata(
+    repositoryId: number,
+  ): Promise<RepositoryMetadataSchemaType | null> {
+    return await RepositoryMetadataModel.findOne({
+      repository_id: repositoryId,
+    }).lean();
+  }
+
+  async updateRepositoryMetadata(
+    metadata: RepositoryMetadataSchemaType,
+  ): Promise<RepositoryMetadataSchemaType> {
+    return await RepositoryMetadataModel.findOneAndUpdate(
+      { repository_id: metadata.repository_id },
+      metadata,
+      { new: true, upsert: true },
+    ).lean();
   }
 }

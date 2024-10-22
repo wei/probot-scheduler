@@ -1,12 +1,14 @@
 import type { Request, Response } from "express";
 import type { Probot } from "probot";
-import { createInstallationService } from "@src/services/service-factory.ts";
+import type { InstallationService } from "@src/services/installation-service.ts";
 
-const installationRouteHandlers = (app: Probot) => {
+const installationRouteHandlers = (
+  app: Probot,
+  installationService: InstallationService,
+) => {
   return {
     adminGetInstallation: async (req: Request, res: Response) => {
       try {
-        const installationService = createInstallationService(app);
         const response = await installationService.getInstallation(
           req.params.installationIdOrLogin,
         );
@@ -25,9 +27,9 @@ const installationRouteHandlers = (app: Probot) => {
     },
     adminProcessInstallation: async (req: Request, res: Response) => {
       try {
-        const installationService = createInstallationService(app);
         const response = await installationService.processInstallation(
           req.params.installationIdOrLogin,
+          { triggerImmediately: true },
         );
         return res.json(response);
       } catch (error) {

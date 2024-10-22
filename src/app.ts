@@ -9,17 +9,17 @@ import {
 
 async function scheduler(app: Probot, opts: SchedulerAppOptions) {
   if (!opts.skipFullSync) {
-    await fullSync(app);
+    await fullSync(app, opts);
   }
 
-  app.on("installation", installationWebhookEventHandler.bind(null, app));
+  app.on("installation", installationWebhookEventHandler.bind(null, app, opts));
   app.on(
     "installation_target",
-    installationTargetWebhookEventHandler.bind(null, app),
+    installationTargetWebhookEventHandler.bind(null, app, opts),
   );
   app.on(
     "installation_repositories",
-    installationRepositoriesWebhookEventHandler.bind(null, app),
+    installationRepositoriesWebhookEventHandler.bind(null, app, opts),
   );
 }
 

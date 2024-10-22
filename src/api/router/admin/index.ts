@@ -13,7 +13,7 @@ const createAdminRouter = (
   const {
     adminGetInstallation,
     adminProcessInstallation,
-  } = installationRouteHandlers(app);
+  } = installationRouteHandlers(app, installationService);
 
   const {
     adminGetRepository,

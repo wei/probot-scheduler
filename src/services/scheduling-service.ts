@@ -1,12 +1,13 @@
 import { Queue } from "bullmq";
 import type { Redis } from "ioredis";
 import type { Logger } from "pino";
+import type { RepositorySchemaType } from "@src/models/repository-model.ts";
+import type { RepositoryMetadataSchemaType } from "@src/models/repository-metadata-model.ts";
 import {
   JobPriority,
   QueueName,
   type SchedulerJobData,
 } from "@src/utils/types.ts";
-import type { RepositoryModelSchemaType } from "@src/models/repository-model.ts";
 
 export class SchedulingService {
   private repoJobQueue: Queue;
@@ -23,7 +24,7 @@ export class SchedulingService {
 
   private getId(
     type: "job-scheduler" | "job" | "oneoff-job",
-    jobData: SchedulerJobData,
+    jobData: Pick<SchedulerJobData, "installation_id" | "repository_id">,
     suffix?: string,
   ) {
     return `[${type}_${jobData.installation_id}_${jobData.repository_id}${
@@ -58,7 +59,10 @@ export class SchedulingService {
     );
   }
 
-  async addJob(jobData: SchedulerJobData, jobPriority = JobPriority.High) {
+  async addJob(
+    jobData: SchedulerJobData,
+    jobPriority: JobPriority = JobPriority.High,
+  ) {
     const jobId = this.getId("oneoff-job", jobData, Date.now().toString());
     this.log.debug({ jobData, jobPriority, jobId }, "Adding one-off job");
     return await this.repoJobQueue.add(
@@ -71,29 +75,17 @@ export class SchedulingService {
     );
   }
 
-  async unscheduleJob(jobData: SchedulerJobData) {
+  async unscheduleJob(
+    jobData: Pick<SchedulerJobData, "installation_id" | "repository_id">,
+  ) {
     this.log.debug({ jobData }, "Unscheduling job");
     await this.repoJobQueue.removeJobScheduler(
       this.getId("job-scheduler", jobData),
     );
   }
 
-  async scheduleRepositories(repositories: RepositoryModelSchemaType[], opts: {
-    triggerImmediately?: boolean;
-  }) {
-    this.log.debug(
-      { repositoryCount: repositories.length, opts },
-      "Scheduling installation",
-    );
-    for (const repository of repositories) {
-      await this.scheduleRepository(repository, {
-        triggerImmediately: opts.triggerImmediately,
-      });
-    }
-  }
-
   async unscheduleRepositories(
-    repositories: RepositoryModelSchemaType[],
+    repositories: RepositorySchemaType[],
   ) {
     this.log.debug(
       { repositoryCount: repositories.length },
@@ -104,11 +96,11 @@ export class SchedulingService {
     }
   }
 
-  async scheduleRepository(repository: RepositoryModelSchemaType, {
-    triggerImmediately,
-  }: {
-    triggerImmediately?: boolean;
-  } = {}) {
+  async scheduleRepository(
+    repository: RepositorySchemaType,
+    metadata: RepositoryMetadataSchemaType,
+    { triggerImmediately }: { triggerImmediately?: boolean } = {},
+  ) {
     const {
       id: repository_id,
       installation_id,
@@ -120,6 +112,7 @@ export class SchedulingService {
       installation_id,
       full_name,
       triggerImmediately,
+      metadata,
     }, "Scheduling repository");
 
     await this.scheduleJob(
@@ -127,9 +120,11 @@ export class SchedulingService {
         installation_id,
         repository_id,
         full_name,
+        metadata,
       },
       {
-        cron: "* * * * *",
+        cron: metadata.cron,
+        jobPriority: metadata.job_priority,
       },
     );
 
@@ -138,11 +133,12 @@ export class SchedulingService {
         installation_id,
         repository_id,
         full_name,
-      });
+        metadata,
+      }, JobPriority.High);
     }
   }
 
-  async unscheduleRepository(repository: RepositoryModelSchemaType) {
+  async unscheduleRepository(repository: RepositorySchemaType) {
     const {
       id: repository_id,
       installation_id,
@@ -157,7 +153,6 @@ export class SchedulingService {
     await this.unscheduleJob({
       installation_id,
       repository_id,
-      full_name,
     });
   }
 }

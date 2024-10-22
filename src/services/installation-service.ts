@@ -1,7 +1,9 @@
 import type { DataService } from "./data-service.ts";
 import type { Context, Probot } from "probot";
-import type { InstallationModelSchemaType } from "@src/models/installation-model.ts";
-import type { RepositoryModelSchemaType } from "@src/models/repository-model.ts";
+import type { InstallationSchemaType } from "@src/models/installation-model.ts";
+import type { RepositorySchemaType } from "@src/models/repository-model.ts";
+import type { RepositoryMetadataSchemaType } from "@src/models/repository-metadata-model.ts";
+import type { SchedulerAppOptions } from "@src/utils/types.ts";
 import type { SchedulingService } from "./scheduling-service.ts";
 import pluralize from "@wei/pluralize";
 
@@ -10,8 +12,10 @@ export class InstallationService {
     private app: Probot,
     private dataService: DataService,
     private jobSchedulingService: SchedulingService,
+    private options: SchedulerAppOptions,
   ) {}
 
+  //#region Webhook Event Handlers
   async handleInstallationEvent(context: Context<"installation">) {
     const {
       action,
@@ -46,32 +50,115 @@ export class InstallationService {
             pluralize("repository", repositories?.length, true)
           }`,
         );
-        await this.setUpInstallation(context);
+        await this.processSetupInstallation(context);
         break;
       case "deleted":
         context.log.info(`😭 ${account.type} ${account.login} uninstalled`);
 
-        await this.deleteInstallation(installationId);
+        await this.processDeleteInstallation(installationId);
         break;
       case "new_permissions_accepted":
         context.log.info(
           `🔐 ${account.type} ${account.login} accepted new permissions`,
         );
 
-        await this.setUpInstallation(context);
+        await this.processSetupInstallation(context);
         break;
       case "suspend":
         context.log.info(`🚫 ${account.type} ${account.login} suspended`);
 
-        await this.suspendInstallation(installationId);
+        await this.processSuspendInstallation(installationId);
         break;
       case "unsuspend":
         context.log.info(`👍 ${account.type} ${account.login} unsuspended`);
 
-        await this.setUpInstallation(context);
+        await this.processSetupInstallation(context);
         break;
       default:
         context.log.warn(
+          `⚠️ Unhandled event ${context.name}.${action} by ${account.login}`,
+        );
+        break;
+    }
+  }
+
+  async handleInstallationRepositoriesEvent(
+    context: Context<"installation_repositories">,
+  ) {
+    const {
+      action,
+      repositories_added: added,
+      repositories_removed: removed,
+      installation: {
+        id: installationId,
+        account,
+        repository_selection: selection,
+      },
+    } = context.payload;
+
+    const log = context.log.child({
+      event: context.name,
+      action,
+      account: account.id,
+      accountType: account.type,
+      accountName: account.login,
+      installationId,
+      selection: selection,
+    });
+
+    switch (action) {
+      case "added":
+        log.info(
+          {
+            repositoryCount: added.length,
+            repositoryIds: added.map((repo) => repo.id),
+            repositoryNames: added.map((repo) => repo.full_name),
+          },
+          `➕ ${account.type} ${account.login} added ${
+            pluralize("repository", added.length, true)
+          }`,
+        );
+
+        try {
+          await this.processAddInstallationRepositories(context);
+          log.debug(
+            `✅ Successfully processed ${context.name}.${action} for ${account.login}`,
+          );
+        } catch (err) {
+          log.error(
+            err,
+            `❌ Failed to add or schedule some repositories, triggering full installation setup`,
+          );
+          throw err;
+        }
+        break;
+      case "removed":
+        log.info(
+          {
+            repositoryCount: removed.length,
+            repositoryIds: removed.map((repo) => repo.id),
+            repositoryNames: removed.map((repo) => repo.full_name),
+          },
+          `➖ ${account.type} ${account.login} removed ${
+            pluralize("repository", removed.length, true)
+          }`,
+        );
+
+        try {
+          await this.processRemoveInstallationRepositories(context);
+          log.debug(
+            `✅ Successfully processed ${context.name}.${action} for ${account.login}`,
+          );
+        } catch (err) {
+          log.error(
+            err,
+            `❌ Failed to remove or unschedule some repositories, triggering full installation setup`,
+          );
+          throw err;
+        }
+        break;
+      default:
+        log.warn(
           `⚠️ Unhandled event ${context.name}.${action} by ${account.login}`,
         );
         break;
@@ -102,7 +189,7 @@ export class InstallationService {
           `♻️ ${account.type} ${account.login} renamed from ${oldLogin}`,
         );
 
-        await this.setUpInstallation(context);
+        await this.processSetupInstallation(context);
         break;
       default:
         context.log.warn(
@@ -111,8 +198,10 @@ export class InstallationService {
         break;
     }
   }
+  //#endregion
 
-  async setUpInstallation(context: Context<"installation">) {
+  //#region Installation Management
+  async processSetupInstallation(context: Context<"installation">) {
     return await this.processInstallation(
       context.payload.installation.id,
       {
@@ -138,7 +227,7 @@ export class InstallationService {
       })).data;
 
       await this.dataService.saveInstallation(
-        installation as InstallationModelSchemaType,
+        installation as InstallationSchemaType,
       );
 
       log.info(`🗑️ Unschedule installation before processing`);
@@ -156,7 +245,7 @@ export class InstallationService {
       const installedRepositories = await octokit.paginate(
         octokit.apps.listReposAccessibleToInstallation,
         { per_page: 100 },
-      ) as unknown as RepositoryModelSchemaType[]; // TODO: Type fixed in https://github.com/octokit/plugin-paginate-rest.js/issues/350 upgrade probot to pick it up
+      ) as unknown as RepositorySchemaType[]; // TODO: Type fixed in https://github.com/octokit/plugin-paginate-rest.js/issues/350 upgrade probot to pick it up
 
       await this.dataService.updateRepositories(
         installationId,
@@ -164,14 +253,12 @@ export class InstallationService {
       );
 
       log.info(`Schedule installation ${installationId}`);
-      const { repositories } = await this.dataService
-        .getInstallation(
+      for (const repository of installedRepositories) {
+        await this.processRepository({
           installationId,
-        );
-      await this.jobSchedulingService.scheduleRepositories(
-        repositories,
-        { triggerImmediately },
-      );
+          repositoryId: repository.id,
+        }, triggerImmediately);
+      }
 
       return { installation, repositories: installedRepositories };
     } catch (err) {
@@ -180,7 +267,7 @@ export class InstallationService {
     }
   }
 
-  async deleteInstallation(installationId: number) {
+  async processDeleteInstallation(installationId: number) {
     const log = this.app.log.child({
       service: "InstallationService",
       installationId,
@@ -196,7 +283,7 @@ export class InstallationService {
     await this.dataService.deleteInstallation(installationId);
   }
 
-  async suspendInstallation(installationId: number) {
+  async processSuspendInstallation(installationId: number) {
     const log = this.app.log.child({
       service: "InstallationService",
       installationId,
@@ -211,15 +298,201 @@ export class InstallationService {
     await this.dataService.saveInstallation(installation);
     await this.dataService.deleteInstallation(installationId);
   }
+  //#endregion
 
-  // Helpers methods
+  //#region Installation Repositories Management
+  private async processAddInstallationRepositories(
+    context: Context<"installation_repositories">,
+  ) {
+    const {
+      installation: {
+        id: installationId,
+        account: { login: owner },
+        suspended_at,
+      },
+      repositories_added,
+    } = context.payload;
+
+    const octokit = await this.app.auth(installationId);
+
+    for (const { id, name, full_name } of repositories_added) {
+      const log = context.log.child({
+        repositoryId: id,
+        repositoryFullName: full_name,
+      });
+
+      try {
+        if (suspended_at) {
+          log.info(
+            `ℹ️⏭️ Skipping add repository for suspended installation`,
+          );
+          continue;
+        }
+        log.info(`➕ Adding repository`);
+
+        // Get full repository details
+        const { data } = await octokit.repos.get({
+          owner,
+          repo: name,
+        });
+
+        const repo = {
+          ...data,
+          installation_id: installationId,
+        } as RepositorySchemaType;
+
+        await this.dataService.addRepository(installationId, repo);
+
+        return await this.processRepository({
+          installationId,
+          repositoryId: id,
+        }, true);
+      } catch (err) {
+        log.error(
+          err,
+          `❌ Failed to save or schedule repository`,
+        );
+        throw err;
+      }
+    }
+  }
+
+  private async processRemoveInstallationRepositories(
+    context: Context<"installation_repositories">,
+  ) {
+    const {
+      installation: {
+        id: installationId,
+      },
+      repositories_removed,
+    } = context.payload;
+
+    for (const repo of repositories_removed) {
+      const log = context.log.child({
+        repositoryId: repo.id,
+        repositoryFullName: repo.full_name,
+      });
+
+      try {
+        log.info(`➖ Removing repository`);
+
+        const deletedRepo = await this.dataService.deleteRepository(
+          installationId,
+          repo.id,
+        );
+
+        if (deletedRepo) {
+          await this.jobSchedulingService.unscheduleRepository(
+            deletedRepo,
+          );
+        }
+      } catch (err) {
+        log.error(
+          err,
+          `❌ Failed to delete or unschedule repository`,
+        );
+        throw err;
+      }
+    }
+  }
+  //#endregion
+
+  //#region Helper Methods
+  async getInstallation(installationId: number) {
+    const log = this.app.log.child({
+      service: "InstallationService",
+      installationId,
+    });
+
+    log.debug(`🔍 Getting installation`);
+
+    const octokit = await this.app.auth(installationId);
+    const installation =
+      (await octokit.apps.getInstallation({ installation_id: installationId }))
+        .data;
+    const repositories = await octokit.paginate(
+      octokit.apps.listReposAccessibleToInstallation,
+      { per_page: 100 },
+    ) as unknown as RepositorySchemaType[];
+
+    log.debug({
+      repositoryCount: repositories.length,
+      repositoryIds: repositories.map((repo) => repo.id),
+      repositoryNames: repositories.map((repo) => repo.full_name),
+    }, `✅ Got installation`);
+
+    return { installation, repositories };
+  }
+
+  async getRepository(searchOpts: {
+    installationId?: number;
+    repositoryId?: number;
+    fullName?: string;
+  }) {
+    const log = this.app.log.child({
+      service: "InstallationService",
+      installationId: searchOpts.installationId,
+      repositoryId: searchOpts.repositoryId,
+      repositoryName: searchOpts.fullName,
+    });
+
+    log.debug(`🔍 Get repository`);
+
+    return await this.dataService.getRepository(searchOpts);
+  }
+
+  async processRepository(searchOpts: {
+    installationId?: number;
+    repositoryId?: number;
+    fullName?: string;
+  }, triggerImmediately: boolean = false) {
+    const log = this.app.log.child({
+      service: "InstallationService",
+      installationId: searchOpts.installationId,
+      repositoryId: searchOpts.repositoryId,
+      repositoryName: searchOpts.fullName,
+    });
+
+    log.debug(`🏃 Process repository`);
+    try {
+      const repository = await this.getRepository(searchOpts);
+      if (!repository) {
+        throw new Error(`Repository not found`);
+      }
+      const currentMetadata = await this.dataService.getRepositoryMetadata(
+        repository.id,
+      );
+
+      let metadata: RepositoryMetadataSchemaType | undefined;
+      if (this.options.getRepositorySchedule) {
+        metadata = await this.options.getRepositorySchedule(
+          repository,
+          currentMetadata ?? undefined,
+        );
+      }
+
+      if (!metadata) {
+        throw new Error(`No metadata found for repository`);
+      }
+
+      await this.dataService.updateRepositoryMetadata(metadata);
+      await this.jobSchedulingService.scheduleRepository(repository, metadata, {
+        triggerImmediately,
+      });
+      return repository;
+    } catch (err) {
+      log.error(err, `❌ Failed to process repository`);
+      throw new Error(`Failed to process repository`);
+    }
+  }
+
   async processInstallationByLogin(installationLogin: string) {
     const log = this.app.log.child({
       service: "InstallationService",
       installationLogin,
     });
 
-    log.info(`🏃 Processing installation by login`);
+    log.debug(`🏃 Processing installation by login`);
 
     const installation = await this.dataService
       .getInstallationByLogin(installationLogin);
@@ -240,7 +513,7 @@ export class InstallationService {
       installationLogin,
     });
 
-    log.info(`🔍 Getting installation by login`);
+    log.info(`🔍 Get installation by login`);
 
     const installation = await this.dataService
       .getInstallationByLogin(installationLogin);
@@ -252,65 +525,5 @@ export class InstallationService {
 
     return this.getInstallation(installation.id);
   }
-
-  async getInstallation(installationId: number) {
-    const log = this.app.log.child({
-      service: "InstallationService",
-      installationId,
-    });
-
-    log.info(`🔍 Getting installation`);
-
-    const octokit = await this.app.auth(installationId);
-    const installation =
-      (await octokit.apps.getInstallation({ installation_id: installationId }))
-        .data;
-    const repositories = await octokit.paginate(
-      octokit.apps.listReposAccessibleToInstallation,
-      { per_page: 100 },
-    ) as unknown as RepositoryModelSchemaType[];
-
-    log.info({
-      repositoryCount: repositories.length,
-      repositoryIds: repositories.map((repo) => repo.id),
-      repositoryNames: repositories.map((repo) => repo.full_name),
-    }, `✅ Got installation`);
-
-    return { installation, repositories };
-  }
-
-  async getRepositoryByFullName(fullName: string) {
-    const log = this.app.log.child({
-      service: "InstallationService",
-      repositoryName: fullName,
-    });
-
-    log.info(`🔍 Getting repository by full name`);
-
-    return await this.dataService.getRepository({ fullName });
-  }
-
-  async processRepositoryByFullName(fullName: string) {
-    const log = this.app.log.child({
-      service: "InstallationService",
-      repositoryName: fullName,
-    });
-
-    log.info(`🏃 Processing repository`);
-
-    try {
-      const repository = await this.getRepositoryByFullName(fullName);
-      if (!repository) {
-        throw new Error(`Repository not found`);
-      }
-      await this.jobSchedulingService.scheduleRepository(repository, {
-        triggerImmediately: true,
-      });
-
-      return repository;
-    } catch (err) {
-      log.error(err, `❌ Failed to process repository by id`);
-      throw new Error(`Failed to process repository`);
-    }
-  }
+  //#endregion
 }

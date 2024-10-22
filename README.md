@@ -56,9 +56,119 @@ export default (app: Probot) => {
   createSchedulerApp(app, {
     // Optional: Skip the initial full sync
     skipFullSync: false,
+    // Define custom repository scheduling
+    getRepositorySchedule: async (repository, currentMetadata) => {
+      let randomMinute = Math.floor(Math.random() * 60);
+      return {
+        repository_id: repository.id,
+        cron: `${randomMinute} */1 * * *`, // Every hour at a random minute
+        job_priority: JobPriority.High,
+      };
+    },
   });
 };
 ```
+
+<details>
+<summary>Custom Repository Scheduling</summary>
+
+You can define custom scheduling for each repository by providing a
+`getRepositorySchedule` function when creating the scheduler app. This function
+allows you to set custom cron schedules and job priorities for each repository.
+
+#### SchedulerAppOptions
+
+When initializing the scheduler app, you can pass an options object of type
+`SchedulerAppOptions`:
+
+```typescript
+interface SchedulerAppOptions {
+  skipFullSync?: boolean;
+  getRepositorySchedule?: (
+    repository: RepositorySchemaType,
+    currentMetadata?: RepositoryMetadataSchemaType,
+  ) => Promise<RepositoryMetadataSchemaType>;
+}
+```
+
+- `skipFullSync`: (optional) If set to `true`, the initial full sync of all
+  installations will be skipped.
+- `getRepositorySchedule`: (optional) A function that determines the schedule
+  for each repository.
+
+#### getRepositorySchedule Function
+
+The `getRepositorySchedule` function is called for each repository and should
+return a `RepositoryMetadataSchemaType` object:
+
+```typescript
+interface RepositoryMetadataSchemaType {
+  repository_id: number;
+  cron: string;
+  job_priority: JobPriority;
+}
+
+enum JobPriority {
+  Low = 20,
+  Normal = 10,
+  High = 5,
+}
+```
+
+This function receives two parameters:
+
+1. `repository`: The current repository information.
+1. `currentMetadata`: The existing metadata for the repository (if any).
+
+It should return a Promise that resolves to a `RepositoryMetadataSchemaType`
+object containing:
+
+- `repository_id`: The ID of the repository.
+- `cron`: A cron expression for scheduling the repository.
+- `job_priority`: The priority of the job (use `JobPriority` enum).
+
+#### Example Usage
+
+Here's an example of how to use the scheduler with custom options:
+
+```typescript
+createSchedulerApp(app, {
+  // Optional: Skip the initial full sync
+  skipFullSync: false,
+
+  // Define custom repository scheduling
+  getRepositorySchedule: async (repository, currentMetadata) => {
+    // Your custom logic to determine the schedule
+    let randomMinute = Math.floor(Math.random() * 60);
+    let cron = `${randomMinute} */1 * * *`; // Every hour at a random minute
+    let jobPriority = JobPriority.Normal;
+
+    // Example: Set different schedules based on repository properties
+    if (repository.stargazers_count > 100) {
+      cron = `*/30 * * * *`; // Every 30 minutes for popular repos
+      jobPriority = JobPriority.High;
+    } else if (repository.private) {
+      cron = `${randomMinute} */6 * * *`; // Every 6 hours for private repos
+    } else if (repository.fork) {
+      cron = `${randomMinute} */12 * * *`; // Every 12 hours for forked repos
+      jobPriority = JobPriority.Low;
+    }
+    // You can also use currentMetadata to make decisions if needed
+    if (
+      currentMetadata && currentMetadata.job_priority === JobPriority.High
+    ) {
+      jobPriority = JobPriority.High; // Maintain high priority if it was set before
+    }
+    return {
+      repository_id: repository.id,
+      cron,
+      job_priority: jobPriority,
+    };
+  },
+});
+```
+
+</details>
 
 ### Defining a Custom Worker
 

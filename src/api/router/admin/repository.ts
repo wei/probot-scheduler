@@ -12,8 +12,8 @@ const repositoryRouteHandlers = (
       const fullName = `${owner}/${repo}`;
 
       try {
-        const repository = await installationService.getRepositoryByFullName(
-          fullName,
+        const repository = await installationService.getRepository(
+          { fullName },
         );
         if (repository) {
           res.json(repository);
@@ -37,7 +37,7 @@ const repositoryRouteHandlers = (
       const fullName = `${owner}/${repo}`;
 
       try {
-        await installationService.processRepositoryByFullName(fullName);
+        await installationService.processRepository({ fullName }, true);
         res.status(202).json({
           message: `Job scheduled for repository: ${fullName}`,
         });

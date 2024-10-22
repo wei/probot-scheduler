@@ -1,7 +1,13 @@
 import type { ApplicationFunctionOptions } from "probot";
+import type { RepositorySchemaType } from "@src/models/repository-model.ts";
+import type { RepositoryMetadataSchemaType } from "@src/models/repository-metadata-model.ts";
 
 export interface SchedulerAppOptions extends ApplicationFunctionOptions {
   skipFullSync?: boolean;
+  getRepositorySchedule: (
+    repository: RepositorySchemaType,
+    currentMetadata?: RepositoryMetadataSchemaType,
+  ) => Promise<RepositoryMetadataSchemaType>;
 }
 
 export const QueueName = {
@@ -22,4 +28,5 @@ export interface SchedulerJobData {
   installation_id: number;
   repository_id: number;
   full_name: string;
+  metadata: RepositoryMetadataSchemaType;
 }
