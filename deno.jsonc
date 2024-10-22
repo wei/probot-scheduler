@@ -8,7 +8,8 @@
     "full-sync": "deno run --env-file --allow-all scripts/full-sync.ts",
     "hook": "deno run --allow-read --allow-run --allow-write https://deno.land/x/deno_hooks@0.1.1/mod.ts",
     "install-hooks": "deno task hook install",
-    "test": "deno test --allow-all"
+    "test": "deno test --allow-all",
+    "check": "deno lint && deno fmt --check && deno check ."
   },
   "imports": {
     "@octokit/auth-app": "npm:@octokit/auth-app@^7.1.1",
@@ -19,7 +20,7 @@
     "@std/testing": "jsr:@std/testing@^1.0.3",
     "@wei/pluralize": "jsr:@wei/pluralize@^8.0.1",
     "bullmq": "npm:bullmq@^5.21.2",
-    "express": "npm:express@^4.21.1",
+    "h3": "npm:h3@^1.13.0",
     "ioredis": "npm:ioredis@^5.4.1",
     "mongoose": "npm:mongoose@^8.7.2",
     "pino": "npm:pino@^9.5.0",

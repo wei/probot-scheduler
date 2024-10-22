@@ -10,7 +10,7 @@ async function main() {
     await connectMongoDB();
 
     const probot = createProbot({ overrides: { log } });
-    await fullSync(probot);
+    await fullSync(probot, null);
   } catch (error) {
     log.error(error, "Error during full sync");
     exitCode = 1;

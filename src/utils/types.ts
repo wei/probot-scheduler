@@ -28,5 +28,5 @@ export interface SchedulerJobData {
   installation_id: number;
   repository_id: number;
   full_name: string;
-  metadata: RepositoryMetadataSchemaType;
+  metadata: RepositoryMetadataSchemaType | null;
 }

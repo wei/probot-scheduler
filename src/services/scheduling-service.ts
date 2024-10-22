@@ -84,21 +84,9 @@ export class SchedulingService {
     );
   }
 
-  async unscheduleRepositories(
-    repositories: RepositorySchemaType[],
-  ) {
-    this.log.debug(
-      { repositoryCount: repositories.length },
-      "Unscheduling installation",
-    );
-    for (const repository of repositories) {
-      await this.unscheduleRepository(repository);
-    }
-  }
-
   async scheduleRepository(
     repository: RepositorySchemaType,
-    metadata: RepositoryMetadataSchemaType,
+    metadata: RepositoryMetadataSchemaType | null,
     { triggerImmediately }: { triggerImmediately?: boolean } = {},
   ) {
     const {
@@ -107,26 +95,38 @@ export class SchedulingService {
       full_name,
     } = repository;
 
-    this.log.debug({
-      repository_id,
-      installation_id,
-      full_name,
-      triggerImmediately,
-      metadata,
-    }, "Scheduling repository");
-
-    await this.scheduleJob(
-      {
-        installation_id,
+    if (metadata) {
+      this.log.debug({
         repository_id,
+        installation_id,
         full_name,
+        triggerImmediately,
         metadata,
-      },
-      {
-        cron: metadata.cron,
-        jobPriority: metadata.job_priority,
-      },
-    );
+      }, "Scheduling repository");
+
+      await this.scheduleJob(
+        {
+          installation_id,
+          repository_id,
+          full_name,
+          metadata,
+        },
+        {
+          cron: metadata.cron,
+          jobPriority: metadata.job_priority,
+        },
+      );
+    } else {
+      this.log.debug(
+        {
+          repository_id,
+          installation_id,
+          full_name,
+          triggerImmediately,
+        },
+        "Skipping scheduling repository as no metadata found",
+      );
+    }
 
     if (triggerImmediately) {
       await this.addJob({
@@ -154,5 +154,17 @@ export class SchedulingService {
       installation_id,
       repository_id,
     });
+  }
+
+  async unscheduleRepositories(
+    repositories: RepositorySchemaType[],
+  ) {
+    this.log.debug(
+      { repositoryCount: repositories.length },
+      "Unscheduling installation",
+    );
+    for (const repository of repositories) {
+      await this.unscheduleRepository(repository);
+    }
   }
 }

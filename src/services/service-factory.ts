@@ -8,7 +8,7 @@ import type { SchedulerAppOptions } from "@src/utils/types.ts";
 
 export function createInstallationService(
   app: Probot,
-  options: SchedulerAppOptions,
+  options: SchedulerAppOptions | null,
 ): InstallationService {
   const redisClient = new Redis(appConfig.redisConfig!, {
     maxRetriesPerRequest: null,

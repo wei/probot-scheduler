@@ -32,7 +32,7 @@ export class DataService {
       { id: data.id },
       data,
       { new: true, upsert: true },
-    ).lean();
+    );
   }
 
   async deleteInstallation(installationId: number) {
@@ -47,8 +47,9 @@ export class DataService {
     this.log?.debug({
       installationId,
     }, `📥 Getting installation`);
-    const installation = await InstallationModel.findOne({ id: installationId })
-      .lean();
+    const installation = await InstallationModel.findOne({
+      id: installationId,
+    });
     if (!installation) {
       this.log?.warn({
         installationId,
@@ -57,7 +58,7 @@ export class DataService {
     }
     const repositories = await RepositoryModel.find({
       installation_id: installationId,
-    }).lean();
+    });
     this.log?.debug({
       installationId,
       accountId: installation.account.id,
@@ -81,7 +82,7 @@ export class DataService {
       (await RepositoryModel.find(
         { installation_id: installationId },
         { id: 1, _id: 0 },
-      ).lean()).map((r: RepositorySchemaType) => r.id),
+      )).map((r) => r.id),
     );
 
     const repositoriesToAdd: RepositorySchemaType[] = [];
@@ -165,7 +166,7 @@ export class DataService {
       id: repositoryId,
       installation_id: installationId,
       full_name: fullName,
-    })).lean();
+    }));
   }
 
   async addRepository(
@@ -192,7 +193,7 @@ export class DataService {
     return await RepositoryModel.findOneAndDelete({
       id: repositoryId,
       installation_id: installationId,
-    }).lean();
+    });
   }
 
   async getInstallationByLogin(login: string) {
@@ -202,7 +203,7 @@ export class DataService {
     return await InstallationModel.findOne({ "account.login": login }, {
       id: 1,
       _id: 0,
-    }).lean();
+    });
   }
 
   async getRepositoryMetadata(
@@ -210,7 +211,7 @@ export class DataService {
   ): Promise<RepositoryMetadataSchemaType | null> {
     return await RepositoryMetadataModel.findOne({
       repository_id: repositoryId,
-    }).lean();
+    });
   }
 
   async updateRepositoryMetadata(
@@ -220,6 +221,6 @@ export class DataService {
       { repository_id: metadata.repository_id },
       metadata,
       { new: true, upsert: true },
-    ).lean();
+    );
   }
 }

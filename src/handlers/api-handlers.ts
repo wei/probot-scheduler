@@ -5,7 +5,7 @@ export const getInstallationHandler = async (
   app: Probot,
   installationIdOrLogin: string,
 ) => {
-  const installationService = createInstallationService(app);
+  const installationService = createInstallationService(app, null);
   const log = app.log.child({
     handler: "getInstallationHandler",
     installationIdOrLogin,
@@ -28,7 +28,7 @@ export const processInstallationHandler = async (
   app: Probot,
   installationIdOrLogin: string,
 ) => {
-  const installationService = createInstallationService(app);
+  const installationService = createInstallationService(app, null);
   const log = app.log.child({
     handler: "processInstallationHandler",
     installationIdOrLogin,

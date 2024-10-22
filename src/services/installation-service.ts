@@ -2,7 +2,6 @@ import type { DataService } from "./data-service.ts";
 import type { Context, Probot } from "probot";
 import type { InstallationSchemaType } from "@src/models/installation-model.ts";
 import type { RepositorySchemaType } from "@src/models/repository-model.ts";
-import type { RepositoryMetadataSchemaType } from "@src/models/repository-metadata-model.ts";
 import type { SchedulerAppOptions } from "@src/utils/types.ts";
 import type { SchedulingService } from "./scheduling-service.ts";
 import pluralize from "@wei/pluralize";
@@ -12,7 +11,7 @@ export class InstallationService {
     private app: Probot,
     private dataService: DataService,
     private jobSchedulingService: SchedulingService,
-    private options: SchedulerAppOptions,
+    private options: SchedulerAppOptions | null,
   ) {}
 
   //#region Webhook Event Handlers
@@ -441,6 +440,34 @@ export class InstallationService {
     return await this.dataService.getRepository(searchOpts);
   }
 
+  async getInstallationByLogin(installationLogin: string) {
+    const log = this.app.log.child({
+      service: "InstallationService",
+      installationLogin,
+    });
+
+    log.info(`🔍 Get installation by login`);
+
+    const installation = await this.dataService
+      .getInstallationByLogin(installationLogin);
+
+    if (!installation) {
+      log.warn(`⚠️ Installation not found`);
+      throw new Error(`Installation not found`);
+    }
+
+    return await this.getInstallation(installation.id);
+  }
+
+  async getInstallationByLoginOrId(installationIdOrLogin: string) {
+    const installationId = installationIdOrLogin.match(/^\d+$/)
+      ? Number(installationIdOrLogin)
+      : undefined;
+    return await (installationId
+      ? this.getInstallation(installationId)
+      : this.getInstallationByLogin(installationIdOrLogin));
+  }
+
   async processRepository(searchOpts: {
     installationId?: number;
     repositoryId?: number;
@@ -463,22 +490,25 @@ export class InstallationService {
         repository.id,
       );
 
-      let metadata: RepositoryMetadataSchemaType | undefined;
-      if (this.options.getRepositorySchedule) {
+      let metadata = currentMetadata;
+      if (this.options?.getRepositorySchedule) {
         metadata = await this.options.getRepositorySchedule(
           repository,
           currentMetadata ?? undefined,
         );
       }
 
-      if (!metadata) {
-        throw new Error(`No metadata found for repository`);
+      if (metadata) {
+        await this.dataService.updateRepositoryMetadata(metadata);
       }
 
-      await this.dataService.updateRepositoryMetadata(metadata);
-      await this.jobSchedulingService.scheduleRepository(repository, metadata, {
-        triggerImmediately,
-      });
+      await this.jobSchedulingService.scheduleRepository(
+        repository,
+        metadata,
+        {
+          triggerImmediately,
+        },
+      );
       return repository;
     } catch (err) {
       log.error(err, `❌ Failed to process repository`);
@@ -486,7 +516,10 @@ export class InstallationService {
     }
   }
 
-  async processInstallationByLogin(installationLogin: string) {
+  async processInstallationByLogin(
+    installationLogin: string,
+    opts?: { triggerImmediately?: boolean },
+  ) {
     const log = this.app.log.child({
       service: "InstallationService",
       installationLogin,
@@ -502,28 +535,19 @@ export class InstallationService {
       return new Error(`Installation not found: ${installationLogin}`);
     }
 
-    return this.processInstallation(installation.id, {
-      triggerImmediately: true,
-    });
+    return await this.processInstallation(installation.id, opts);
   }
 
-  async getInstallationByLogin(installationLogin: string) {
-    const log = this.app.log.child({
-      service: "InstallationService",
-      installationLogin,
-    });
-
-    log.info(`🔍 Get installation by login`);
-
-    const installation = await this.dataService
-      .getInstallationByLogin(installationLogin);
-
-    if (!installation) {
-      log.warn(`⚠️ Installation not found`);
-      throw new Error(`Installation not found`);
-    }
-
-    return this.getInstallation(installation.id);
+  async processInstallationByLoginOrId(
+    installationIdOrLogin: string,
+    opts?: { triggerImmediately?: boolean },
+  ) {
+    const installationId = installationIdOrLogin.match(/^\d+$/)
+      ? Number(installationIdOrLogin)
+      : undefined;
+    return installationId
+      ? await this.processInstallation(installationId, opts)
+      : await this.processInstallationByLogin(installationIdOrLogin, opts);
   }
   //#endregion
 }

@@ -4,7 +4,10 @@ import { createInstallationService } from "@src/services/service-factory.ts";
 import type { InstallationSchemaType } from "@src/models/installation-model.ts";
 import type { SchedulerAppOptions } from "@src/utils/types.ts";
 
-export async function fullSync(app: Probot, options: SchedulerAppOptions) {
+export async function fullSync(
+  app: Probot,
+  options: SchedulerAppOptions | null,
+) {
   const octokit = getProbotOctokit();
   const installationService = createInstallationService(app, options);
 
