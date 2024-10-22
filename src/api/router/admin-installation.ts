@@ -14,7 +14,10 @@ const adminInstallationRouteHandlers = (app: Probot) => {
       );
       return res.json(response);
     } catch (error) {
-      log.error({ err: error }, "Failed to retrieve installation");
+      app.log.error({
+        installationIdOrLogin: req.params.installationIdOrLogin,
+        err: error,
+      }, "Failed to retrieve installation");
       const errorMessage = error instanceof Error
         ? error.message
         : "Internal server error";
@@ -31,7 +34,10 @@ const adminInstallationRouteHandlers = (app: Probot) => {
       );
       return res.json(response);
     } catch (error) {
-      log.error({ err: error }, "Failed to process installation");
+      app.log.error({
+        installationIdOrLogin: req.params.installationIdOrLogin,
+        err: error,
+      }, "Failed to process installation");
       const errorMessage = error instanceof Error
         ? error.message
         : "Internal server error";
