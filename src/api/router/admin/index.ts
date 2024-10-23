@@ -1,4 +1,4 @@
-import { createRouter } from "h3";
+import express from "express";
 import type { Probot } from "probot";
 import type { InstallationService } from "@src/services/installation-service.ts";
 import installationRouteHandlers from "./installation.ts";
@@ -8,7 +8,7 @@ const createAdminRouter = (
   app: Probot,
   installationService: InstallationService,
 ) => {
-  const adminRouter = createRouter();
+  const adminRouter = express.Router();
 
   const {
     adminGetInstallation,

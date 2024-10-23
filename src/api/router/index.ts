@@ -1,28 +1,23 @@
-import { createRouter, defineEventHandler, type H3Event, useBase } from "h3";
+import type { Request, Response } from "express";
 import type { Probot } from "probot";
+import express from "express";
 import { createInstallationService } from "@src/services/service-factory.ts";
 import createAdminRouter from "./admin/index.ts";
 import type { SchedulerAppOptions } from "@src/utils/types.ts";
 
-const createAppRouter = (app: Probot, options: SchedulerAppOptions) => {
-  const router = createRouter();
+const createRouter = (app: Probot, options: SchedulerAppOptions) => {
+  const router = express.Router();
   const installationService = createInstallationService(app, options);
 
-  // Mount admin api router
-  router.use(
-    "/api/admin/**",
-    useBase("/api/admin", createAdminRouter(app, installationService).handler),
-  );
+  // Mount admin router
+  router.use("/api/admin", createAdminRouter(app, installationService));
 
   // Status route
-  router.get(
-    "/ping",
-    defineEventHandler((_event: H3Event) => {
-      return { status: "pong" };
-    }),
-  );
+  router.get("/ping", (_req: Request, res: Response) => {
+    res.json({ status: "pong" });
+  });
 
   return router;
 };
 
-export default createAppRouter;
+export default createRouter;

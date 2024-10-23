@@ -1,12 +1,5 @@
-import {
-  createApp as createH3Server,
-  fromNodeMiddleware,
-  toWebHandler,
-} from "h3";
-import {
-  createNodeMiddleware as createProbotWebhookMiddleware,
-  createProbot,
-} from "probot";
+import express from "express";
+import { createNodeMiddleware, createProbot } from "probot";
 import createSchedulerApp from "@src/app.ts";
 import { connectMongoDB, disconnectMongoDB } from "@src/configs/database.ts";
 import createRouter from "./router/index.ts";
@@ -29,21 +22,25 @@ const schedulerApp = createSchedulerApp.bind(null, probot, {
   getRepositorySchedule: getExampleRepositorySchedule,
 });
 
-const server = createH3Server();
-server.use(fromNodeMiddleware(
-  createProbotWebhookMiddleware(schedulerApp, {
+const server = express();
+const gitHubWebhookPath = appConfig.webhookPath || "/api/github/webhooks";
+server.use(
+  gitHubWebhookPath,
+  createNodeMiddleware(schedulerApp, {
     probot,
-    webhooksPath: appConfig.webhookPath || "/api/github/webhooks",
+    webhooksPath: "/",
   }),
-));
+);
 server.use(
   "/",
   createRouter(probot, {
     getRepositorySchedule: getExampleRepositorySchedule,
-  }).handler,
+  }),
 );
 
-Deno.serve({ port: appConfig.port }, (req) => toWebHandler(server)(req));
+server.listen(appConfig.port, () => {
+  log.info(`[Express] Server is running on port ${appConfig.port}`);
+});
 
 Deno.addSignalListener("SIGINT", () => handleAppTermination("SIGINT"));
 Deno.addSignalListener("SIGTERM", () => handleAppTermination("SIGTERM"));

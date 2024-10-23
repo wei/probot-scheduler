@@ -1,72 +1,58 @@
-import {
-  createError,
-  defineEventHandler,
-  getRouterParams,
-  type H3Event,
-  setResponseStatus,
-} from "h3";
+import type { Request, Response } from "express";
 import type { Probot } from "probot";
 import type { InstallationService } from "@src/services/installation-service.ts";
 
 const repositoryRouteHandlers = (
   app: Probot,
   installationService: InstallationService,
-) => ({
-  adminGetRepository: defineEventHandler(async (event: H3Event) => {
-    const { owner, repo } = getRouterParams(event);
-    const fullName = `${owner}/${repo}`;
+) => {
+  return {
+    adminGetRepository: async (req: Request, res: Response) => {
+      const { owner, repo } = req.params;
+      const fullName = `${owner}/${repo}`;
 
-    try {
-      const repository = await installationService.getRepository(
-        { fullName },
-      );
-      if (repository) {
-        return repository;
-      } else {
-        throw createError({
-          statusCode: 404,
-          statusMessage: "Repository not found",
-        });
+      try {
+        const repository = await installationService.getRepository(
+          { fullName },
+        );
+        if (repository) {
+          res.json(repository);
+        } else {
+          res.status(404).json({ error: "Repository not found" });
+        }
+      } catch (error) {
+        app.log.error({
+          repositoryName: fullName,
+          err: error,
+        }, `Error fetching repository details for ${fullName}:`);
+        const errorMessage = error instanceof Error
+          ? error.message
+          : "Internal server error";
+        const statusCode = errorMessage.includes("not found") ? 404 : 500;
+        return res.status(statusCode).json({ error: errorMessage });
       }
-    } catch (error) {
-      app.log.error({
-        repositoryName: fullName,
-        err: error,
-      }, `Error fetching repository details for ${fullName}:`);
-      const errorMessage = error instanceof Error
-        ? error.message
-        : "Internal server error";
-      throw createError({
-        statusCode: errorMessage.includes("not found") ? 404 : 500,
-        statusMessage: errorMessage,
-      });
-    }
-  }),
-  adminProcessRepository: defineEventHandler(async (event: H3Event) => {
-    const { owner, repo } = getRouterParams(event);
-    const fullName = `${owner}/${repo}`;
-
-    try {
-      await installationService.processRepository({ fullName }, true);
-
-      setResponseStatus(event, 202);
-      return {
-        message: `Job scheduled for repository: ${fullName}`,
-      };
-    } catch (error) {
-      app.log.error({
-        repositoryName: fullName,
-        err: error,
-      }, `Error scheduling job for repository ${fullName}:`);
-      const errorMessage = error instanceof Error
-        ? error.message
-        : "Internal server error";
-      throw createError({
-        statusCode: errorMessage.includes("not found") ? 404 : 500,
-        statusMessage: errorMessage,
-      });
-    }
-  }),
-});
+    },
+    adminProcessRepository: async (req: Request, res: Response) => {
+      const { owner, repo } = req.params;
+      const fullName = `${owner}/${repo}`;
+      try {
+        await installationService.processRepository({ fullName }, true);
+        res.status(202).json({
+          message: `Job scheduled for repository: ${fullName}`,
+        });
+      } catch (error) {
+        app.log.error({
+          repositoryName: fullName,
+          err: error,
+        }, `Error scheduling job for repository ${fullName}:`);
+        const errorMessage = error instanceof Error
+          ? error.message
+          : "Internal server error";
+        const statusCode = errorMessage.includes("not found") ? 404 : 500;
+        return res.status(statusCode).json({ error: errorMessage });
+      }
+    },
+  };
+};
 
 export default repositoryRouteHandlers;

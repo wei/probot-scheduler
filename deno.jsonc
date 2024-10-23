@@ -20,7 +20,7 @@
     "@std/testing": "jsr:@std/testing@^1.0.3",
     "@wei/pluralize": "jsr:@wei/pluralize@^8.0.1",
     "bullmq": "npm:bullmq@^5.21.2",
-    "h3": "npm:h3@^1.13.0",
+    "express": "npm:express@^4.21.1",
     "ioredis": "npm:ioredis@^5.4.1",
     "mongoose": "npm:mongoose@^8.7.2",
     "pino": "npm:pino@^9.5.0",
