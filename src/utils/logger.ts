@@ -1,20 +1,43 @@
 import { appConfig } from "@src/configs/app-config.ts";
 import { pino } from "pino";
-import { getTransformStream } from "@probot/pino";
+import { getTransformStream, type LogLevel } from "@probot/pino";
 
-const transform = getTransformStream({
-  logFormat: appConfig.logFormat,
-  logLevelInString: appConfig.logLevelInString,
-});
-transform.pipe(pino.destination(1));
-
-const log = pino(
+export const createLogger = (
   {
-    name: appConfig.name,
-    level: appConfig.logLevel || "info",
-    messageKey: appConfig.logMessageKey || "msg",
+    name,
+    logFormat = "pretty",
+    logLevel = "info",
+    logLevelInString = true,
+    logMessageKey = "msg",
+  }: {
+    name: string;
+    logFormat?: "json" | "pretty";
+    logLevel?: LogLevel | "silent";
+    logLevelInString?: boolean;
+    logMessageKey?: string;
   },
-  transform,
-);
+) => {
+  const transform = getTransformStream({
+    logFormat: logFormat,
+    logLevelInString: logLevelInString,
+  });
+  transform.pipe(pino.destination(1));
 
-export default log;
+  const log = pino(
+    {
+      name,
+      level: logLevel,
+      messageKey: logMessageKey,
+    },
+    transform,
+  );
+  return log;
+};
+
+export default createLogger({
+  name: appConfig.name,
+  logFormat: appConfig.logFormat,
+  logLevel: appConfig.logLevel,
+  logLevelInString: appConfig.logLevelInString,
+  logMessageKey: appConfig.logMessageKey,
+});
