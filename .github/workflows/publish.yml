@@ -19,12 +19,16 @@ jobs:
         id: publish
         run: |
           OUTPUT=$(npx jsr publish)
-          if [[ $OUTPUT =~ Successfully\ published\ ([^[:space:]]+) ]]; then
-            PACKAGE_VERSION="${BASH_REMATCH[1]}"
+          if [[ $OUTPUT =~ Visit\ (https://jsr\.io/[^[:space:]]+)\ for\ details ]]; then
+            JSR_URL="${BASH_REMATCH[1]}"
+            PACKAGE_VERSION="${JSR_URL##*/}"
             VERSION="${PACKAGE_VERSION##*@}"
             echo "package_version=$PACKAGE_VERSION" >> $GITHUB_OUTPUT
             echo "version=$VERSION" >> $GITHUB_OUTPUT
-            echo "jsr_url=https://jsr.io/$PACKAGE_VERSION" >> $GITHUB_OUTPUT
+            echo "jsr_url=$JSR_URL" >> $GITHUB_OUTPUT
+            echo "Version found: $VERSION"
+          else
+            echo "Version not found"
           fi
 
       - name: Create Git Tag
