@@ -1,5 +1,6 @@
 import express from "express";
 import { createNodeMiddleware, createProbot } from "probot";
+import { Redis } from "ioredis";
 import createSchedulerApp from "@src/app.ts";
 import { connectMongoDB, disconnectMongoDB } from "@src/configs/database.ts";
 import createRouter from "./router/index.ts";
@@ -11,6 +12,9 @@ const args = Deno.args;
 const skipFullSync = args.includes("--skip-full-sync");
 
 await connectMongoDB();
+const redisClient = new Redis(appConfig.redisConfig!, {
+  maxRetriesPerRequest: null,
+});
 
 const probot = createProbot({
   overrides: {
@@ -19,6 +23,7 @@ const probot = createProbot({
 });
 const schedulerApp = createSchedulerApp.bind(null, probot, {
   skipFullSync,
+  redisClient,
   getRepositorySchedule: getExampleRepositorySchedule,
 });
 
@@ -34,6 +39,7 @@ server.use(
 server.use(
   "/",
   createRouter(probot, {
+    redisClient,
     getRepositorySchedule: getExampleRepositorySchedule,
   }),
 );

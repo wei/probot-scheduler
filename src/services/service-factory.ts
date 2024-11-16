@@ -10,9 +10,10 @@ export function createInstallationService(
   app: Probot,
   options: SchedulerAppOptions | null,
 ): InstallationService {
-  const redisClient = new Redis(appConfig.redisConfig!, {
-    maxRetriesPerRequest: null,
-  });
+  const redisClient = options?.redisClient ??
+    new Redis(appConfig.redisConfig!, {
+      maxRetriesPerRequest: null,
+    });
   const jobSchedulingService = new SchedulingService(
     redisClient,
     app.log,

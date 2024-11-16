@@ -3,9 +3,11 @@ import type {
   RepositoryMetadataSchemaType,
   RepositorySchemaType,
 } from "@src/models/index.ts";
+import type { Redis } from "ioredis";
 
 export interface SchedulerAppOptions extends ApplicationFunctionOptions {
   skipFullSync?: boolean;
+  redisClient: Redis;
   getRepositorySchedule: (
     repository: RepositorySchemaType,
     currentMetadata?: RepositoryMetadataSchemaType,

@@ -3,7 +3,9 @@ import { appConfig } from "@src/configs/app-config.ts";
 import log from "@src/utils/logger.ts";
 
 export const connectMongoDB = async () => {
-  await mongoose.connect(appConfig.mongoDBUrl!);
+  if (mongoose.connection.readyState !== 1) {
+    await mongoose.connect(appConfig.mongoDBUrl!);
+  }
   if (mongoose.connection.readyState !== 1) {
     throw new Error("[MongoDB] Failed to connect");
   }
