@@ -20,6 +20,9 @@
     "ghcr.io/devcontainers/features/github-cli:1": {
       "installDirectlyFromGitHubRelease": true,
       "version": "latest"
+    },
+    "ghcr.io/jckimble/devcontainer-features/ngrok:3": {
+      "version": "stable"
     }
   },
 
