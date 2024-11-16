@@ -1,7 +1,7 @@
 import type { Probot } from "probot";
 import { getProbotOctokit } from "./octokit.ts";
 import { createInstallationService } from "@src/services/service-factory.ts";
-import type { InstallationSchemaType } from "@src/models/installation-model.ts";
+import type { InstallationSchemaType } from "@src/models/index.ts";
 import type { SchedulerAppOptions } from "@src/utils/types.ts";
 
 export async function fullSync(

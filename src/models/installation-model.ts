@@ -1,4 +1,4 @@
-import { model, Schema } from "mongoose";
+import { type Model, model, Schema } from "mongoose";
 import type { Context } from "probot";
 
 export type InstallationSchemaType =
@@ -70,7 +70,9 @@ const InstallationSchema = new Schema<InstallationSchemaType>({
   timestamps: true,
 });
 
-export const InstallationModel = model<InstallationSchemaType>(
+export const InstallationModel: Model<InstallationSchemaType> = model<
+  InstallationSchemaType
+>(
   "probot-scheduler.installation",
   InstallationSchema,
 );

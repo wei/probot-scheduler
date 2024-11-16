@@ -1,7 +1,9 @@
 import type { DataService } from "./data-service.ts";
 import type { Context, Probot } from "probot";
-import type { InstallationSchemaType } from "@src/models/installation-model.ts";
-import type { RepositorySchemaType } from "@src/models/repository-model.ts";
+import type {
+  InstallationSchemaType,
+  RepositorySchemaType,
+} from "@src/models/index.ts";
 import type { SchedulerAppOptions } from "@src/utils/types.ts";
 import type { SchedulingService } from "./scheduling-service.ts";
 import pluralize from "@wei/pluralize";

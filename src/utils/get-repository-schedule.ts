@@ -1,5 +1,7 @@
-import type { RepositorySchemaType } from "@src/models/repository-model.ts";
-import type { RepositoryMetadataSchemaType } from "@src/models/repository-metadata-model.ts";
+import type {
+  RepositoryMetadataSchemaType,
+  RepositorySchemaType,
+} from "@src/models/index.ts";
 import { JobPriority } from "@src/utils/types.ts";
 
 export async function getExampleRepositorySchedule(

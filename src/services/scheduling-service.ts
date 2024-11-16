@@ -1,8 +1,10 @@
 import { Queue } from "bullmq";
 import type { Redis } from "ioredis";
 import type { Logger } from "pino";
-import type { RepositorySchemaType } from "@src/models/repository-model.ts";
-import type { RepositoryMetadataSchemaType } from "@src/models/repository-metadata-model.ts";
+import type {
+  RepositoryMetadataSchemaType,
+  RepositorySchemaType,
+} from "@src/models/index.ts";
 import {
   JobPriority,
   QueueName,

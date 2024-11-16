@@ -1,4 +1,4 @@
-import { model, Schema } from "mongoose";
+import { type Model, model, Schema } from "mongoose";
 import { JobPriority } from "@src/utils/types.ts";
 
 export interface RepositoryMetadataSchemaType {
@@ -27,7 +27,8 @@ const RepositoryMetadataSchema = new Schema<RepositoryMetadataSchemaType>({
   timestamps: true,
 });
 
-export const RepositoryMetadataModel = model<RepositoryMetadataSchemaType>(
-  "probot-scheduler.repository_metadata",
-  RepositoryMetadataSchema,
-);
+export const RepositoryMetadataModel: Model<RepositoryMetadataSchemaType> =
+  model<RepositoryMetadataSchemaType>(
+    "probot-scheduler.repository_metadata",
+    RepositoryMetadataSchema,
+  );

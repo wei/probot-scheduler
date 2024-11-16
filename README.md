@@ -36,12 +36,18 @@ npx jsr add @wei/probot-scheduler
 deno add jsr:@wei/probot-scheduler
 ```
 
-1. Configuration
+2. Configuration
 
 Make sure to set up the required environment variables in your `.env` file. See
 the `.env.example` file for a list of available options.
 
-1. Import and use the scheduler in your Probot app:
+3. Import and use the scheduler in your Probot app:
+
+```typescript
+// Connect to MongoDB before initializing the scheduler app
+import mongoose from "mongoose";
+await mongoose.connect(INSERT_MONGO_URL);
+```
 
 ```typescript
 import { Probot } from "probot";
@@ -118,7 +124,7 @@ enum JobPriority {
 This function receives two parameters:
 
 1. `repository`: The current repository information.
-1. `currentMetadata`: The existing metadata for the repository (if any).
+2. `currentMetadata`: The existing metadata for the repository (if any).
 
 It should return a Promise that resolves to a `RepositoryMetadataSchemaType`
 object containing:
@@ -180,7 +186,9 @@ To define a custom worker that consumes messages from the scheduler:
 import { createWorker, type SchedulerJobData } from "@wei/probot-scheduler";
 import { Redis } from "ioredis";
 
-const redisClient = new Redis(INSERT_REDIS_URL);
+const redisClient = new Redis(INSERT_REDIS_URL, {
+  maxRetriesPerRequest: null, // Required for BullMQ
+});
 
 const worker = createWorker(
   myJobProcessor, // Processor can also be a string or URL to a processor file
@@ -195,7 +203,7 @@ worker.on("completed", (job) => {
 });
 
 worker.on("failed", (job, err) => {
-  console.error(`Job ${job.id} failed: ${err.message}`);
+  console.error(`Job ${job?.id} failed: ${err.message}`);
 });
 
 async function myJobProcessor(job: Job<SchedulerJobData>) {

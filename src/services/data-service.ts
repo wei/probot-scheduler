@@ -1,19 +1,15 @@
 import {
   InstallationModel,
   type InstallationSchemaType,
-} from "@src/models/installation-model.ts";
-import {
+  RepositoryMetadataModel,
+  type RepositoryMetadataSchemaType,
   RepositoryModel,
   type RepositorySchemaType,
-} from "@src/models/repository-model.ts";
+} from "@src/models/index.ts";
 import pluralize from "@wei/pluralize";
 import type { AnyBulkWriteOperation } from "mongoose";
 import type { Logger } from "pino";
 import { removeUndefinedKeys } from "@src/utils/helpers.ts";
-import {
-  RepositoryMetadataModel,
-  type RepositoryMetadataSchemaType,
-} from "@src/models/repository-metadata-model.ts";
 
 export class DataService {
   private log?: Logger;

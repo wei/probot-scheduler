@@ -1,6 +1,8 @@
 import type { ApplicationFunctionOptions } from "probot";
-import type { RepositorySchemaType } from "@src/models/repository-model.ts";
-import type { RepositoryMetadataSchemaType } from "@src/models/repository-metadata-model.ts";
+import type {
+  RepositoryMetadataSchemaType,
+  RepositorySchemaType,
+} from "@src/models/index.ts";
 
 export interface SchedulerAppOptions extends ApplicationFunctionOptions {
   skipFullSync?: boolean;
