@@ -9,11 +9,41 @@ jobs:
     runs-on: ubuntu-latest
 
     permissions:
-      contents: read
+      contents: write
       id-token: write
 
     steps:
       - uses: actions/checkout@v4
 
       - name: Publish package
-        run: npx jsr publish
+        id: publish
+        run: |
+          OUTPUT=$(npx jsr publish)
+          if [[ $OUTPUT =~ Successfully\ published\ ([^[:space:]]+) ]]; then
+            PACKAGE_VERSION="${BASH_REMATCH[1]}"
+            VERSION="${PACKAGE_VERSION##*@}"
+            echo "package_version=$PACKAGE_VERSION" >> $GITHUB_OUTPUT
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+            echo "jsr_url=https://jsr.io/$PACKAGE_VERSION" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create Git Tag
+        if: steps.publish.outputs.version != ''
+        run: |
+          git tag v${{ steps.publish.outputs.version }}
+          git push origin v${{ steps.publish.outputs.version }}
+
+      - name: Create GitHub Release
+        if: steps.publish.outputs.version != ''
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.publish.outputs.version }}
+          name: Release v${{ steps.publish.outputs.version }}
+          body: |
+            Release of version ${{ steps.publish.outputs.version }}
+
+            📦 Package: `${{ steps.publish.outputs.package_version }}`
+            🔗 JSR URL: ${{ steps.publish.outputs.jsr_url }}
+
+          draft: false
+          prerelease: ${{ contains(steps.publish.outputs.version, 'alpha') || contains(steps.publish.outputs.version, 'beta') || contains(steps.publish.outputs.version, 'rc') }}
