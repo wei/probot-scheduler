@@ -44,9 +44,13 @@ the `.env.example` file for a list of available options.
 3. Import and use the scheduler in your Probot app:
 
 ```typescript
-// Connect to MongoDB before initializing the scheduler app
+// Initialize MongoDB and Redis before the scheduler app
 import mongoose from "mongoose";
 await mongoose.connect(INSERT_MONGO_URL);
+
+const redisClient = new Redis(INSERT_REDIS_URL, {
+  maxRetriesPerRequest: null, // Required for BullMQ
+});
 ```
 
 ```typescript
@@ -62,6 +66,9 @@ export default (app: Probot) => {
   createSchedulerApp(app, {
     // Optional: Skip the initial full sync
     skipFullSync: false,
+
+    redisClient,
+
     // Define custom repository scheduling
     getRepositorySchedule: async (repository, currentMetadata) => {
       let randomMinute = Math.floor(Math.random() * 60);
@@ -90,6 +97,7 @@ When initializing the scheduler app, you can pass an options object of type
 ```typescript
 interface SchedulerAppOptions {
   skipFullSync?: boolean;
+  redisClient?: Redis;
   getRepositorySchedule?: (
     repository: RepositorySchemaType,
     currentMetadata?: RepositoryMetadataSchemaType,
@@ -99,6 +107,8 @@ interface SchedulerAppOptions {
 
 - `skipFullSync`: (optional) If set to `true`, the initial full sync of all
   installations will be skipped.
+- `redisClient`: (optional) A Redis client instance. If not provided, a new
+  Redis client will be created using the `REDIS_URL` environment variable.
 - `getRepositorySchedule`: (optional) A function that determines the schedule
   for each repository.
 
@@ -210,7 +220,8 @@ async function myJobProcessor(job: Job<SchedulerJobData>) {
   console.log(`Processing job ${job.id} for repository`, {
     installationId: job.data.installation_id,
     repositoryId: job.data.repository_id,
-    fullName: job.data.full_name,
+    owner: job.data.owner,
+    repo: job.data.repo,
   });
   // Add your custom logic here
 }

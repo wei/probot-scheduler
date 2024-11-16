@@ -94,14 +94,16 @@ export class SchedulingService {
     const {
       id: repository_id,
       installation_id,
-      full_name,
+      owner: { login: owner },
+      name: repo,
     } = repository;
 
     if (metadata) {
       this.log.debug({
         repository_id,
         installation_id,
-        full_name,
+        owner,
+        repo,
         triggerImmediately,
         metadata,
       }, "Scheduling repository");
@@ -110,7 +112,8 @@ export class SchedulingService {
         {
           installation_id,
           repository_id,
-          full_name,
+          owner,
+          repo,
           metadata,
         },
         {
@@ -123,7 +126,8 @@ export class SchedulingService {
         {
           repository_id,
           installation_id,
-          full_name,
+          owner,
+          repo,
           triggerImmediately,
         },
         "Skipping scheduling repository as no metadata found",
@@ -134,7 +138,8 @@ export class SchedulingService {
       await this.addJob({
         installation_id,
         repository_id,
-        full_name,
+        owner,
+        repo,
         metadata,
       }, JobPriority.High);
     }

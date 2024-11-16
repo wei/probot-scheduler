@@ -7,7 +7,7 @@ import type { Redis } from "ioredis";
 
 export interface SchedulerAppOptions extends ApplicationFunctionOptions {
   skipFullSync?: boolean;
-  redisClient: Redis;
+  redisClient?: Redis;
   getRepositorySchedule: (
     repository: RepositorySchemaType,
     currentMetadata?: RepositoryMetadataSchemaType,
@@ -31,6 +31,7 @@ export type JobPriority = typeof JobPriority[keyof typeof JobPriority];
 export interface SchedulerJobData {
   installation_id: number;
   repository_id: number;
-  full_name: string;
+  owner: string;
+  repo: string;
   metadata: RepositoryMetadataSchemaType | null;
 }
