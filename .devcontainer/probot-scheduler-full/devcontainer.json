@@ -1,6 +1,7 @@
 {
-  "name": "Base Dev Environment",
+  "name": "Probot Scheduler Full Dev Environment (amd64)",
   "dockerComposeFile": [
+    "../base/docker-compose.yml",
     "docker-compose.yml"
   ],
   "service": "dev",
@@ -29,7 +30,10 @@
   "forwardPorts": [
     "app:3000",
     "mongodb:27017",
-    "redis:6379"
+    "redis:6379",
+    "mongo-express:8081",
+    "redis-commander:8081",
+    "bullboard:8083"
   ],
 
   "postStartCommand": {
