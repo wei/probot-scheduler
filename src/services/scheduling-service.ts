@@ -1,4 +1,4 @@
-import { Queue } from "bullmq";
+import { type Job, Queue } from "bullmq";
 import type { Redis } from "ioredis";
 import type { Logger } from "pino";
 import type {
@@ -28,7 +28,7 @@ export class SchedulingService {
     type: "job-scheduler" | "job" | "oneoff-job",
     jobData: Pick<SchedulerJobData, "installation_id" | "repository_id">,
     suffix?: string,
-  ) {
+  ): string {
     return `[${type}_${jobData.installation_id}_${jobData.repository_id}${
       suffix ? `_${suffix}` : ""
     }]`;
@@ -37,7 +37,7 @@ export class SchedulingService {
   async scheduleJob(jobData: SchedulerJobData, options: {
     cron: string;
     jobPriority?: JobPriority;
-  }) {
+  }): Promise<Job<SchedulerJobData>> {
     const {
       cron,
       jobPriority = JobPriority.Normal,
@@ -64,7 +64,7 @@ export class SchedulingService {
   async addJob(
     jobData: SchedulerJobData,
     jobPriority: JobPriority = JobPriority.High,
-  ) {
+  ): Promise<Job<SchedulerJobData>> {
     const jobId = this.getId("oneoff-job", jobData, Date.now().toString());
     this.log.debug({ jobData, jobPriority, jobId }, "Adding one-off job");
     return await this.repoJobQueue.add(
@@ -90,7 +90,7 @@ export class SchedulingService {
     repository: RepositorySchemaType,
     metadata: RepositoryMetadataSchemaType | null,
     { triggerImmediately }: { triggerImmediately?: boolean } = {},
-  ) {
+  ): Promise<void> {
     const {
       id: repository_id,
       installation_id,
@@ -145,7 +145,7 @@ export class SchedulingService {
     }
   }
 
-  async unscheduleRepository(repository: RepositorySchemaType) {
+  async unscheduleRepository(repository: RepositorySchemaType): Promise<void> {
     const {
       id: repository_id,
       installation_id,
@@ -165,7 +165,7 @@ export class SchedulingService {
 
   async unscheduleRepositories(
     repositories: RepositorySchemaType[],
-  ) {
+  ): Promise<void> {
     this.log.debug(
       { repositoryCount: repositories.length },
       "Unscheduling installation",

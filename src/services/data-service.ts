@@ -20,7 +20,9 @@ export class DataService {
     });
   }
 
-  async saveInstallation(data: InstallationSchemaType) {
+  async saveInstallation(
+    data: InstallationSchemaType,
+  ): Promise<InstallationSchemaType> {
     this.log?.debug({
       installationId: data.id,
     }, `💾 Saving installation`);
@@ -31,7 +33,7 @@ export class DataService {
     );
   }
 
-  async deleteInstallation(installationId: number) {
+  async deleteInstallation(installationId: number): Promise<void> {
     this.log?.debug({
       installationId,
     }, `🗑️ Deleting installation`);
@@ -39,7 +41,10 @@ export class DataService {
     await RepositoryModel.deleteMany({ installation_id: installationId });
   }
 
-  async getInstallation(installationId: number) {
+  async getInstallation(installationId: number): Promise<{
+    installation: InstallationSchemaType;
+    repositories: RepositorySchemaType[];
+  }> {
     this.log?.debug({
       installationId,
     }, `📥 Getting installation`);
@@ -67,7 +72,7 @@ export class DataService {
   async updateRepositories(
     installationId: number,
     installedRepositories: RepositorySchemaType[],
-  ) {
+  ): Promise<void> {
     this.log?.debug({
       installationId,
       repositoryCount: installedRepositories.length,
@@ -157,7 +162,7 @@ export class DataService {
     installationId?: number;
     repositoryId?: number;
     fullName?: string;
-  }) {
+  }): Promise<RepositorySchemaType | null> {
     return await RepositoryModel.findOne(removeUndefinedKeys({
       id: repositoryId,
       installation_id: installationId,
@@ -168,7 +173,7 @@ export class DataService {
   async addRepository(
     installationId: number,
     repository: RepositorySchemaType,
-  ) {
+  ): Promise<RepositorySchemaType> {
     this.log?.debug({
       installationId,
       repositoryId: repository.id,
@@ -181,7 +186,10 @@ export class DataService {
     );
   }
 
-  async deleteRepository(installationId: number, repositoryId: number) {
+  async deleteRepository(
+    installationId: number,
+    repositoryId: number,
+  ): Promise<RepositorySchemaType | null> {
     this.log?.debug({
       installationId,
       repositoryId,
@@ -192,7 +200,9 @@ export class DataService {
     });
   }
 
-  async getInstallationByLogin(login: string) {
+  async getInstallationByLogin(
+    login: string,
+  ): Promise<InstallationSchemaType | null> {
     this.log?.debug({
       login,
     }, `🔍 Getting installation by login`);

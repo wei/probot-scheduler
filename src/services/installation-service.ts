@@ -202,7 +202,14 @@ export class InstallationService {
   //#endregion
 
   //#region Installation Management
-  async processSetupInstallation(context: Context<"installation">) {
+  async processSetupInstallation(
+    context: Context<"installation">,
+  ): Promise<
+    {
+      installation: InstallationSchemaType;
+      repositories: RepositorySchemaType[];
+    } | undefined
+  > {
     return await this.processInstallation(
       context.payload.installation.id,
       {
@@ -215,7 +222,12 @@ export class InstallationService {
   async processInstallation(
     installationId: number,
     { triggerImmediately }: { triggerImmediately?: boolean } = {},
-  ) {
+  ): Promise<
+    {
+      installation: InstallationSchemaType;
+      repositories: RepositorySchemaType[];
+    } | undefined
+  > {
     const log = this.app.log.child({
       service: "InstallationService",
       installationId,
@@ -225,11 +237,9 @@ export class InstallationService {
       const octokit = await this.app.auth(installationId);
       const installation = (await octokit.apps.getInstallation({
         installation_id: installationId,
-      })).data;
+      })).data as unknown as InstallationSchemaType;
 
-      await this.dataService.saveInstallation(
-        installation as InstallationSchemaType,
-      );
+      await this.dataService.saveInstallation(installation);
 
       log.info(`🗑️ Unschedule installation before processing`);
       const { repositories: existingRepositories } = await this
@@ -268,7 +278,7 @@ export class InstallationService {
     }
   }
 
-  async processDeleteInstallation(installationId: number) {
+  async processDeleteInstallation(installationId: number): Promise<void> {
     const log = this.app.log.child({
       service: "InstallationService",
       installationId,
@@ -284,7 +294,7 @@ export class InstallationService {
     await this.dataService.deleteInstallation(installationId);
   }
 
-  async processSuspendInstallation(installationId: number) {
+  async processSuspendInstallation(installationId: number): Promise<void> {
     const log = this.app.log.child({
       service: "InstallationService",
       installationId,
@@ -304,7 +314,7 @@ export class InstallationService {
   //#region Installation Repositories Management
   private async processAddInstallationRepositories(
     context: Context<"installation_repositories">,
-  ) {
+  ): Promise<void> {
     const {
       installation: {
         id: installationId,
@@ -344,7 +354,7 @@ export class InstallationService {
 
         await this.dataService.addRepository(installationId, repo);
 
-        return await this.processRepository({
+        await this.processRepository({
           installationId,
           repositoryId: id,
         }, true);
@@ -360,7 +370,7 @@ export class InstallationService {
 
   private async processRemoveInstallationRepositories(
     context: Context<"installation_repositories">,
-  ) {
+  ): Promise<void> {
     const {
       installation: {
         id: installationId,
@@ -399,7 +409,12 @@ export class InstallationService {
   //#endregion
 
   //#region Helper Methods
-  async getInstallation(installationId: number) {
+  async getInstallation(installationId: number): Promise<
+    {
+      installation: InstallationSchemaType;
+      repositories: RepositorySchemaType[];
+    } | undefined
+  > {
     const log = this.app.log.child({
       service: "InstallationService",
       installationId,
@@ -410,7 +425,7 @@ export class InstallationService {
     const octokit = await this.app.auth(installationId);
     const installation =
       (await octokit.apps.getInstallation({ installation_id: installationId }))
-        .data;
+        .data as unknown as InstallationSchemaType;
     const repositories = await octokit.paginate(
       octokit.apps.listReposAccessibleToInstallation,
       { per_page: 100 },
@@ -429,7 +444,7 @@ export class InstallationService {
     installationId?: number;
     repositoryId?: number;
     fullName?: string;
-  }) {
+  }): Promise<RepositorySchemaType | null> {
     const log = this.app.log.child({
       service: "InstallationService",
       installationId: searchOpts.installationId,
@@ -442,7 +457,12 @@ export class InstallationService {
     return await this.dataService.getRepository(searchOpts);
   }
 
-  async getInstallationByLogin(installationLogin: string) {
+  async getInstallationByLogin(installationLogin: string): Promise<
+    {
+      installation: InstallationSchemaType;
+      repositories: RepositorySchemaType[];
+    } | undefined
+  > {
     const log = this.app.log.child({
       service: "InstallationService",
       installationLogin,
@@ -461,7 +481,12 @@ export class InstallationService {
     return await this.getInstallation(installation.id);
   }
 
-  async getInstallationByLoginOrId(installationIdOrLogin: string) {
+  async getInstallationByLoginOrId(installationIdOrLogin: string): Promise<
+    {
+      installation: InstallationSchemaType;
+      repositories: RepositorySchemaType[];
+    } | undefined
+  > {
     const installationId = installationIdOrLogin.match(/^\d+$/)
       ? Number(installationIdOrLogin)
       : undefined;
@@ -474,7 +499,7 @@ export class InstallationService {
     installationId?: number;
     repositoryId?: number;
     fullName?: string;
-  }, triggerImmediately: boolean = false) {
+  }, triggerImmediately: boolean = false): Promise<RepositorySchemaType> {
     const log = this.app.log.child({
       service: "InstallationService",
       installationId: searchOpts.installationId,
@@ -521,7 +546,12 @@ export class InstallationService {
   async processInstallationByLogin(
     installationLogin: string,
     opts?: { triggerImmediately?: boolean },
-  ) {
+  ): Promise<
+    {
+      installation: InstallationSchemaType;
+      repositories: RepositorySchemaType[];
+    } | undefined
+  > {
     const log = this.app.log.child({
       service: "InstallationService",
       installationLogin,
@@ -534,7 +564,7 @@ export class InstallationService {
 
     if (!installation) {
       log.warn(`⚠️ Installation not found`);
-      return new Error(`Installation not found: ${installationLogin}`);
+      throw new Error(`Installation not found: ${installationLogin}`);
     }
 
     return await this.processInstallation(installation.id, opts);
@@ -543,7 +573,12 @@ export class InstallationService {
   async processInstallationByLoginOrId(
     installationIdOrLogin: string,
     opts?: { triggerImmediately?: boolean },
-  ) {
+  ): Promise<
+    {
+      installation: InstallationSchemaType;
+      repositories: RepositorySchemaType[];
+    } | undefined
+  > {
     const installationId = installationIdOrLogin.match(/^\d+$/)
       ? Number(installationIdOrLogin)
       : undefined;
