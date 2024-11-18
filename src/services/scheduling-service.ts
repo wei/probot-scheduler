@@ -18,6 +18,10 @@ export class SchedulingService {
   constructor(redisClient: Redis, logger: Logger) {
     this.repoJobQueue = new Queue(QueueName.RepoJobQueue, {
       connection: redisClient,
+      defaultJobOptions: {
+        removeOnComplete: 25,
+        removeOnFail: 100,
+      },
     });
     this.log = logger.child({
       service: "JobSchedulingService",

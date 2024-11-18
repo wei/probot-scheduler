@@ -241,7 +241,7 @@ export class InstallationService {
 
       await this.dataService.saveInstallation(installation);
 
-      log.info(`🗑️ Unschedule installation before processing`);
+      log.debug(`🗑️ Unschedule installation before processing`);
       const { repositories: existingRepositories } = await this
         .dataService.getInstallation(installationId);
       await this.jobSchedulingService.unscheduleRepositories(
@@ -284,7 +284,7 @@ export class InstallationService {
       installationId,
     });
 
-    log.info(`🗑️ Unschedule installation before deleting`);
+    log.debug(`🗑️ Unschedule installation before deleting`);
     const { repositories } = await this.dataService.getInstallation(
       installationId,
     );
@@ -300,7 +300,7 @@ export class InstallationService {
       installationId,
     });
 
-    log.info(`🗑️ Unschedule installation before suspending`);
+    log.debug(`🗑️ Unschedule installation before suspending`);
     const { repositories, installation } = await this.dataService
       .getInstallation(installationId);
     await this.jobSchedulingService.unscheduleRepositories(
@@ -339,7 +339,7 @@ export class InstallationService {
           );
           continue;
         }
-        log.info(`➕ Adding repository`);
+        log.debug(`➕ Adding repository`);
 
         // Get full repository details
         const { data } = await octokit.repos.get({
@@ -385,7 +385,7 @@ export class InstallationService {
       });
 
       try {
-        log.info(`➖ Removing repository`);
+        log.debug(`➖ Removing repository`);
 
         const deletedRepo = await this.dataService.deleteRepository(
           installationId,
