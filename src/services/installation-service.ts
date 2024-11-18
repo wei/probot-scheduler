@@ -265,10 +265,17 @@ export class InstallationService {
 
       log.info(`Schedule installation ${installationId}`);
       for (const repository of installedRepositories) {
-        await this.processRepository({
-          installationId,
-          repositoryId: repository.id,
-        }, triggerImmediately);
+        await this.processRepository(
+          {
+            installationId,
+            repositoryId: repository.id,
+          },
+          // Disable triggerImmediately for installations with more than 10 repositories
+          // to prevent queue blockage due to API rate limits on the same installation
+          triggerImmediately
+            ? installedRepositories.length <= 10
+            : triggerImmediately,
+        );
       }
 
       return { installation, repositories: installedRepositories };
