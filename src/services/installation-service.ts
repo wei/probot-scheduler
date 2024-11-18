@@ -2,6 +2,7 @@ import type { DataService } from "./data-service.ts";
 import type { Context, Probot } from "probot";
 import type {
   InstallationSchemaType,
+  RepositoryMetadataSchemaType,
   RepositorySchemaType,
 } from "@src/models/index.ts";
 import type { SchedulerAppOptions } from "@src/utils/types.ts";
@@ -524,11 +525,18 @@ export class InstallationService {
         repository.id,
       );
 
-      let metadata = currentMetadata;
+      // Copy current metadata to strip out MongoDB metadata fields like _id, __v, createdAt, updatedAt
+      let metadata: RepositoryMetadataSchemaType | null = currentMetadata
+        ? {
+          repository_id: currentMetadata.repository_id,
+          cron: currentMetadata.cron,
+          job_priority: currentMetadata.job_priority,
+        }
+        : null;
       if (this.options?.getRepositorySchedule) {
         metadata = await this.options.getRepositorySchedule(
           repository,
-          currentMetadata ?? undefined,
+          metadata ?? undefined,
         );
       }
 

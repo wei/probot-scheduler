@@ -1,6 +1,6 @@
 {
   "name": "@wei/probot-scheduler",
-  "version": "0.1.0-alpha.13",
+  "version": "0.1.0-alpha.14",
   "tasks": {
     "dev": "deno run --env-file --allow-all src/api/index.ts",
     "dev:skip-full-sync": "deno task dev --skip-full-sync",
