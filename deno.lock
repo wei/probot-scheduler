@@ -18,6 +18,7 @@
     "npm:express@^4.21.1": "4.21.1",
     "npm:ioredis@^5.4.1": "5.4.1",
     "npm:mongoose@^8.8.1": "8.8.1",
+    "npm:p-limit@^6.1.0": "6.1.0",
     "npm:pino@^9.5.0": "9.5.0",
     "npm:probot@^13.4.0": "13.4.0_@octokit+core@5.2.0_dotenv@16.4.5"
   },
@@ -1144,10 +1145,16 @@
         "p-try"
       ]
     },
+    "p-limit@6.1.0": {
+      "integrity": "sha512-H0jc0q1vOzlEk0TqAKXKZxdl7kX3OFUzCnNVUnq5Pc3DGo0kpeaMuPqxQn235HibwBEb0/pm9dgKTjXy66fBkg==",
+      "dependencies": [
+        "yocto-queue"
+      ]
+    },
     "p-locate@3.0.0": {
       "integrity": "sha512-x+12w/To+4GFfgJhBEpiDcLozRJGegY+Ei7/z0tSLkMmxGZNybVMSfWj9aJn8Z5Fc7dBUNJOOVgPv2H7IwulSQ==",
       "dependencies": [
-        "p-limit"
+        "p-limit@2.3.0"
       ]
     },
     "p-try@2.2.0": {
@@ -1518,6 +1525,9 @@
     },
     "wrappy@1.0.2": {
       "integrity": "sha512-l4Sp/DRseor9wL6EvV2+TuQn63dMkPjZ/sp9XkghTEbV9KlPS1xUsZ3u7/IQO4wxtcFB4bgpQPRcR3QCvezPcQ=="
+    },
+    "yocto-queue@1.1.1": {
+      "integrity": "sha512-b4JR1PFR10y1mKjhHY9LaGo6tmrgjit7hxVIeAmyMw3jegXR4dhYqLaQF5zMXZxY7tLpMyJeLjr1C4rLmkVe8g=="
     }
   },
   "workspace": {
@@ -1531,6 +1541,7 @@
       "npm:express@^4.21.1",
       "npm:ioredis@^5.4.1",
       "npm:mongoose@^8.8.1",
+      "npm:p-limit@^6.1.0",
       "npm:pino@^9.5.0",
       "npm:probot@^13.4.0"
     ]

@@ -1,8 +1,10 @@
-import type { Probot } from "probot";
-import { getProbotOctokit } from "./octokit.ts";
-import { createInstallationService } from "@src/services/service-factory.ts";
+import type { Logger, Probot } from "probot";
+import pLimit from "p-limit";
 import type { InstallationSchemaType } from "@src/models/index.ts";
 import type { SchedulerAppOptions } from "@src/utils/types.ts";
+import type { InstallationService } from "@src/services/installation-service.ts";
+import { getProbotOctokit } from "@src/utils/octokit.ts";
+import { createInstallationService } from "@src/services/service-factory.ts";
 
 export async function fullSync(
   app: Probot,
@@ -10,6 +12,8 @@ export async function fullSync(
 ) {
   const octokit = getProbotOctokit();
   const installationService = createInstallationService(app, options);
+
+  const limit = pLimit(10);
 
   const log = app.log.child({
     service: "FullSync",
@@ -25,26 +29,44 @@ export async function fullSync(
 
     log.info(`📊 Found ${installations.length} installations`);
 
-    for (const installation of installations) {
-      try {
-        await installationService.processInstallation(installation.id, {
-          triggerImmediately: false,
-        });
-        log.info(
-          { installationId: installation.id },
-          `✅ Processed installation`,
-        );
-      } catch (error) {
-        log.error(
-          { err: error, installationId: installation.id },
-          `❌ Failed to process installation`,
-        );
-      }
-    }
+    await Promise.all(
+      installations.map((installation) =>
+        limit(() => processInstallation(installationService, installation, log))
+      ),
+    );
 
     log.info("✅ Full sync completed successfully");
   } catch (error) {
     log.error({ err: error }, "❌ Full sync failed");
     throw error;
+  }
+}
+
+async function processInstallation(
+  installationService: InstallationService,
+  installation: InstallationSchemaType,
+  log: Logger,
+) {
+  try {
+    log.info(
+      { installationId: installation.id, owner: installation.account.login },
+      `🔄 Processing installation`,
+    );
+    await installationService.processInstallation(installation.id, {
+      triggerImmediately: false,
+    });
+    log.debug(
+      { installationId: installation.id, owner: installation.account.login },
+      `✅ Processed installation`,
+    );
+  } catch (error) {
+    log.error(
+      {
+        err: error,
+        installationId: installation.id,
+        owner: installation.account.login,
+      },
+      `❌ Failed to process installation`,
+    );
   }
 }
