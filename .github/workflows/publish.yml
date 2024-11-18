@@ -3,6 +3,8 @@ on:
   push:
     branches:
       - master
+    paths:
+      - "deno.jsonc"
 
 jobs:
   publish:
@@ -31,7 +33,7 @@ jobs:
             echo "jsr_url=$JSR_URL" >> $GITHUB_OUTPUT
             echo "Version found: $VERSION"
           else
-            echo "Version not found"
+            echo "Version already exists: $VERSION"
           fi
 
       - name: Create Git Tag
