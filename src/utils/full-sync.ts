@@ -13,7 +13,7 @@ export async function fullSync(
   const octokit = getProbotOctokit();
   const installationService = createInstallationService(app, options);
 
-  const limit = pLimit(20);
+  const limit = pLimit(15);
 
   const log = app.log.child({
     service: "FullSync",
