@@ -1,13 +1,10 @@
-import { Redis } from "ioredis";
-import { appConfig } from "@src/configs/app-config.ts";
 import { QueueName } from "@src/utils/types.ts";
 import logger from "@src/utils/logger.ts";
-import repoJobProcessor from "./processor.ts";
+import { getRedisClient } from "@src/configs/redis.ts";
 import { createRepoJobWorker } from "@src/worker/create-worker.ts";
+import repoJobProcessor from "./processor.ts";
 
-const redisClient = new Redis(appConfig.redisConfig!, {
-  maxRetriesPerRequest: null,
-});
+const redisClient = getRedisClient();
 
 const worker = createRepoJobWorker(
   repoJobProcessor, // `${import.meta.dirname}/processor.ts`,
@@ -34,7 +31,7 @@ worker.on("failed", (job, err) => {
 });
 
 const gracefulShutdown = async (signal: string) => {
-  console.log(`Received ${signal}, closing server...`);
+  console.log(`Received ${signal}, closing worker...`);
   await worker.close();
   Deno.exit(0);
 };

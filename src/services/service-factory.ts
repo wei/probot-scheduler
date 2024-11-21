@@ -1,19 +1,16 @@
 import type { Probot } from "probot";
-import { Redis } from "ioredis";
-import { appConfig } from "@src/configs/app-config.ts";
+import type { SchedulerAppOptions } from "@src/utils/types.ts";
+import { getRedisClient } from "@src/configs/redis.ts";
 import { InstallationService } from "@src/services/installation-service.ts";
 import { SchedulingService } from "./scheduling-service.ts";
 import { DataService } from "./data-service.ts";
-import type { SchedulerAppOptions } from "@src/utils/types.ts";
 
 export function createInstallationService(
   app: Probot,
   options: SchedulerAppOptions | null,
 ): InstallationService {
   const redisClient = options?.redisClient ??
-    new Redis(appConfig.redisConfig!, {
-      maxRetriesPerRequest: null,
-    });
+    getRedisClient();
   const jobSchedulingService = new SchedulingService(
     redisClient,
     app.log,
